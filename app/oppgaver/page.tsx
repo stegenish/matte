@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 
 type Operasjon = "+" | "-" | "×" | "÷";
@@ -71,6 +71,7 @@ export default function OppgaverSide() {
     antallOppgaver: 5,
   });
   const [oppgaver, setOppgaver] = useState<Oppgave[]>([]);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [svar, setSvar] = useState<string[]>([]);
   const [sjekket, setSjekket] = useState<boolean[]>([]);
 
@@ -259,8 +260,13 @@ export default function OppgaverSide() {
                         nyttSvar[i] = e.target.value;
                         setSvar(nyttSvar);
                       }}
+                      ref={(el) => { inputRefs.current[i] = el; }}
                       onBlur={() => sjekkEtt(i)}
-                      onKeyDown={(e) => e.key === "Enter" && sjekkEtt(i)}
+                      onKeyDown={(e) => {
+                        if (e.key !== "Enter") return;
+                        sjekkEtt(i);
+                        inputRefs.current[i + 1]?.focus();
+                      }}
                       disabled={sjekket[i]}
                       className={`w-20 text-center text-2xl font-bold border-2 rounded-xl py-1 focus:outline-none ${
                         riktig === true
