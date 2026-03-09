@@ -22,6 +22,15 @@ interface Innstillinger {
   antallOppgaver: number;
 }
 
+// ── Poeng ─────────────────────────────────────────────────────────────────────
+
+// 1 poeng per siffer i svaret (maks 6), +5 for ×, +10 for ÷
+function poengForOppgave(oppgave: Oppgave): number {
+  const sifre = Math.min(String(Math.abs(oppgave.svar)).length, 6);
+  const bonus = oppgave.operasjon === "×" ? 5 : oppgave.operasjon === "÷" ? 10 : 0;
+  return sifre + bonus;
+}
+
 // ── Hjelpefunksjoner ─────────────────────────────────────────────────────────
 
 // Returnerer et tilfeldig tall med nøyaktig n sifre
@@ -73,7 +82,18 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "lily", label: "Lily" },
 ];
 
-// ── Tabs ─────────────────────────────────────────────────────────────────────
+// ── Poengvisning ──────────────────────────────────────────────────────────────
+
+function Poengvisning({ poeng }: { poeng: number }) {
+  return (
+    <div className="flex items-center justify-center gap-2 px-6 pt-4">
+      <span className="text-2xl font-black text-yellow-500">⭐</span>
+      <span className="text-2xl font-black text-gray-700">{poeng} poeng</span>
+    </div>
+  );
+}
+
+// ── TabBar ────────────────────────────────────────────────────────────────────
 
 function TabBar({
   aktiv,
@@ -103,7 +123,7 @@ function TabBar({
 
 // ── OppgaverTab ───────────────────────────────────────────────────────────────
 
-function OppgaverTab() {
+function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
   const [innstillinger, setInnstillinger] = useState<Innstillinger>({
     sifrerA: 1,
     sifrerB: 1,
@@ -123,11 +143,24 @@ function OppgaverTab() {
   }
 
   function sjekkEtt(i: number) {
-    if (svar[i] === "") return;
+    if (svar[i] === "" || sjekket[i]) return;
     setSjekket((prev) => {
       const neste = [...prev];
       neste[i] = true;
       return neste;
+    });
+    if (Number(svar[i]) === oppgaver[i].svar) {
+      leggTilPoeng(poengForOppgave(oppgaver[i]));
+    }
+  }
+
+  function sjekkAlle() {
+    const nySjekket = oppgaver.map((_, i) => svar[i] !== "");
+    setSjekket(nySjekket);
+    oppgaver.forEach((o, i) => {
+      if (!sjekket[i] && nySjekket[i] && Number(svar[i]) === o.svar) {
+        leggTilPoeng(poengForOppgave(o));
+      }
     });
   }
 
@@ -317,9 +350,7 @@ function OppgaverTab() {
 
             {!alleSjekket && (
               <button
-                onClick={() =>
-                  setSjekket(oppgaver.map((_, i) => svar[i] !== ""))
-                }
+                onClick={sjekkAlle}
                 className="mt-2 bg-blue-400 hover:bg-blue-500 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-blue-600 transition-colors self-start shadow"
               >
                 Sjekk svar! 🔍
@@ -342,14 +373,19 @@ function OppgaverTab() {
 
 // ── LilyTab ───────────────────────────────────────────────────────────────────
 
-function LilyTab() {
+const LILY_OPPGAVE: Oppgave = { a: 100, b: 1, operasjon: "-", svar: 99 };
+
+function LilyTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
   const [input, setInput] = useState("");
   const [sjekket, setSjekket] = useState(false);
-  const riktig = sjekket ? Number(input) === 99 : null;
+  const riktig = sjekket ? Number(input) === LILY_OPPGAVE.svar : null;
 
   function sjekk() {
-    if (input === "") return;
+    if (input === "" || sjekket) return;
     setSjekket(true);
+    if (Number(input) === LILY_OPPGAVE.svar) {
+      leggTilPoeng(poengForOppgave(LILY_OPPGAVE));
+    }
   }
 
   function reset() {
@@ -360,9 +396,9 @@ function LilyTab() {
   return (
     <div className="flex flex-col items-center justify-center flex-1 gap-8 p-8">
       <div className="flex items-center gap-4">
-        <span className="text-4xl font-bold text-purple-500">100</span>
+        <span className="text-4xl font-bold text-purple-500">{LILY_OPPGAVE.a}</span>
         <span className="text-4xl font-bold text-gray-500">−</span>
-        <span className="text-4xl font-bold text-green-500">1</span>
+        <span className="text-4xl font-bold text-green-500">{LILY_OPPGAVE.b}</span>
         <span className="text-4xl font-bold text-gray-500">=</span>
         <input
           type="number"
@@ -392,7 +428,7 @@ function LilyTab() {
       {riktig === false && (
         <div className="flex flex-col items-center gap-2">
           <p className="text-4xl font-black text-red-400">
-            Svaret er 99 ❌
+            Svaret er {LILY_OPPGAVE.svar} ❌
           </p>
           <button
             onClick={reset}
@@ -410,6 +446,11 @@ function LilyTab() {
 
 export default function OppgaverSide() {
   const [aktifTab, setAktifTab] = useState<TabId>("oppgaver");
+  const [poeng, setPoeng] = useState(0);
+
+  function leggTilPoeng(p: number) {
+    setPoeng((prev) => prev + p);
+  }
 
   return (
     <main
@@ -429,13 +470,15 @@ export default function OppgaverSide() {
         </h1>
       </div>
 
+      <Poengvisning poeng={poeng} />
+
       {/* Tabs */}
       <TabBar aktiv={aktifTab} onChange={setAktifTab} />
 
       {/* Tab-innhold */}
       <div className="flex flex-col flex-1 bg-white border-2 border-yellow-300 mx-2 mb-2 rounded-b-2xl rounded-tr-2xl overflow-hidden">
-        {aktifTab === "oppgaver" && <OppgaverTab />}
-        {aktifTab === "lily" && <LilyTab />}
+        {aktifTab === "oppgaver" && <OppgaverTab leggTilPoeng={leggTilPoeng} />}
+        {aktifTab === "lily" && <LilyTab leggTilPoeng={leggTilPoeng} />}
       </div>
     </main>
   );
