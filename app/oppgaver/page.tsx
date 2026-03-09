@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
-import OppgaveListe, { type Oppgave, type Operasjon } from "./OppgaveListe";
+import OppgaveListe, { type Oppgave, type Operasjon, type OppgaveListeHandle } from "./OppgaveListe";
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
@@ -245,6 +245,8 @@ const LILY_MINUS: Oppgave[] = TALL_MED_9.map((a) => ({ a: a + 1, b: 1, operasjon
 function LilyTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
   const [plussOppgaver, setPlussOppgaver] = useState<Oppgave[]>(LILY_PLUSS);
   const [minusOppgaver, setMinusOppgaver] = useState<Oppgave[]>(LILY_MINUS);
+  const plussRef = useRef<OppgaveListeHandle>(null);
+  const minusRef = useRef<OppgaveListeHandle>(null);
 
   function nyRunde() {
     // Spread for å lage ny arrayreferanse → utløser useEffect-reset i OppgaveListe
@@ -255,8 +257,20 @@ function LilyTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
   return (
     <section className="flex-1 p-6 overflow-y-auto">
       <div className="flex gap-8 flex-wrap">
-        <OppgaveListe oppgaver={plussOppgaver} leggTilPoeng={leggTilPoeng} onNyRunde={nyRunde} />
-        <OppgaveListe oppgaver={minusOppgaver} leggTilPoeng={leggTilPoeng} onNyRunde={nyRunde} />
+        <OppgaveListe
+          ref={plussRef}
+          oppgaver={plussOppgaver}
+          leggTilPoeng={leggTilPoeng}
+          onNyRunde={nyRunde}
+          onEnterAt={(i) => minusRef.current?.focusInput(i)}
+        />
+        <OppgaveListe
+          ref={minusRef}
+          oppgaver={minusOppgaver}
+          leggTilPoeng={leggTilPoeng}
+          onNyRunde={nyRunde}
+          onEnterAt={(i) => plussRef.current?.focusInput(i + 1)}
+        />
       </div>
     </section>
   );

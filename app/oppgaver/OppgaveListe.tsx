@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 // ── Typer ─────────────────────────────────────────────────────────────────────
 
@@ -24,16 +24,28 @@ export function poengForOppgave(oppgave: Oppgave): number {
 
 // ── OppgaveListe ──────────────────────────────────────────────────────────────
 
+export interface OppgaveListeHandle {
+  focusInput: (i: number) => void;
+}
+
 interface Props {
   oppgaver: Oppgave[];
   leggTilPoeng: (p: number) => void;
   onNyRunde: () => void;
+  onEnterAt?: (i: number) => void;
 }
 
-export default function OppgaveListe({ oppgaver, leggTilPoeng, onNyRunde }: Props) {
+const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe(
+  { oppgaver, leggTilPoeng, onNyRunde, onEnterAt },
+  ref
+) {
   const [svar, setSvar] = useState<string[]>(() => Array(oppgaver.length).fill(""));
   const [sjekket, setSjekket] = useState<boolean[]>(() => Array(oppgaver.length).fill(false));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useImperativeHandle(ref, () => ({
+    focusInput: (i: number) => inputRefs.current[i]?.focus(),
+  }));
 
   // Reset state når parent sender nye oppgaver
   useEffect(() => {
@@ -115,7 +127,8 @@ export default function OppgaveListe({ oppgaver, leggTilPoeng, onNyRunde }: Prop
               onKeyDown={(e) => {
                 if (e.key !== "Enter") return;
                 sjekkEtt(i);
-                inputRefs.current[i + 1]?.focus();
+                if (onEnterAt) onEnterAt(i);
+                else inputRefs.current[i + 1]?.focus();
               }}
               disabled={sjekket[i]}
               autoFocus={i === 0}
@@ -156,4 +169,6 @@ export default function OppgaveListe({ oppgaver, leggTilPoeng, onNyRunde }: Prop
       )}
     </div>
   );
-}
+});
+
+export default OppgaveListe;
