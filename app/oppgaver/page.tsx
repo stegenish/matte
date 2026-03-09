@@ -1,34 +1,18 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import OppgaveListe, { type Oppgave, type Operasjon } from "./OppgaveListe";
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
-type Operasjon = "+" | "-" | "×" | "÷";
 type TabId = "oppgaver" | "lily" | "test";
-
-interface Oppgave {
-  a: number;
-  b: number;
-  operasjon: Operasjon;
-  svar: number;
-}
 
 interface Innstillinger {
   sifrerA: number;
   sifrerB: number;
   operasjoner: Operasjon[];
   antallOppgaver: number;
-}
-
-// ── Poeng ─────────────────────────────────────────────────────────────────────
-
-// 1 poeng per siffer i svaret (maks 6), +5 for ×, +10 for ÷
-function poengForOppgave(oppgave: Oppgave): number {
-  const sifre = Math.min(String(Math.abs(oppgave.svar)).length, 6);
-  const bonus = oppgave.operasjon === "×" ? 5 : oppgave.operasjon === "÷" ? 10 : 0;
-  return sifre + bonus;
 }
 
 // ── Hjelpefunksjoner ─────────────────────────────────────────────────────────
@@ -132,37 +116,9 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
     antallOppgaver: 5,
   });
   const [oppgaver, setOppgaver] = useState<Oppgave[]>([]);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const [svar, setSvar] = useState<string[]>([]);
-  const [sjekket, setSjekket] = useState<boolean[]>([]);
 
   function genererOppgaver() {
-    const nye = lagOppgaver(innstillinger);
-    setOppgaver(nye);
-    setSvar(Array(innstillinger.antallOppgaver).fill(""));
-    setSjekket(Array(innstillinger.antallOppgaver).fill(false));
-  }
-
-  function sjekkEtt(i: number) {
-    if (svar[i] === "" || sjekket[i]) return;
-    setSjekket((prev) => {
-      const neste = [...prev];
-      neste[i] = true;
-      return neste;
-    });
-    if (Number(svar[i]) === oppgaver[i].svar) {
-      leggTilPoeng(poengForOppgave(oppgaver[i]));
-    }
-  }
-
-  function sjekkAlle() {
-    const nySjekket = oppgaver.map((_, i) => svar[i] !== "");
-    setSjekket(nySjekket);
-    oppgaver.forEach((o, i) => {
-      if (!sjekket[i] && nySjekket[i] && Number(svar[i]) === o.svar) {
-        leggTilPoeng(poengForOppgave(o));
-      }
-    });
+    setOppgaver(lagOppgaver(innstillinger));
   }
 
   function toggleOperasjon(op: Operasjon) {
@@ -178,14 +134,6 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
       };
     });
   }
-
-  const alleSjekket =
-    oppgaver.length > 0 &&
-    sjekket.length === oppgaver.length &&
-    sjekket.every(Boolean);
-  const antallRiktige = oppgaver.filter(
-    (o, i) => sjekket[i] && Number(svar[i]) === o.svar
-  ).length;
 
   return (
     <div className="flex flex-col md:flex-row flex-1">
@@ -276,96 +224,11 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-4 max-w-xl">
-            {alleSjekket && (
-              <p className="text-2xl font-black text-center text-green-700 mb-2">
-                {antallRiktige} / {oppgaver.length} riktige!{" "}
-                {antallRiktige === oppgaver.length ? "🎉" : "💪"}
-              </p>
-            )}
-
-            {oppgaver.map((o, i) => {
-              const riktig = sjekket[i] ? Number(svar[i]) === o.svar : null;
-              return (
-                <div
-                  key={i}
-                  className={`flex items-center gap-3 p-3 rounded-2xl border-2 ${
-                    riktig === true
-                      ? "border-green-400 bg-green-50"
-                      : riktig === false
-                      ? "border-red-300 bg-red-50"
-                      : "border-yellow-200 bg-white"
-                  }`}
-                >
-                  <span className="text-xl font-bold text-gray-400 w-7 text-right shrink-0">
-                    {i + 1}.
-                  </span>
-                  <span className="text-2xl font-bold text-purple-500">
-                    {o.a}
-                  </span>
-                  <span className="text-2xl font-bold text-gray-500">
-                    {o.operasjon}
-                  </span>
-                  <span className="text-2xl font-bold text-green-500">
-                    {o.b}
-                  </span>
-                  <span className="text-2xl font-bold text-gray-500">=</span>
-                  <input
-                    type="number"
-                    value={svar[i]}
-                    onChange={(e) => {
-                      const nyttSvar = [...svar];
-                      nyttSvar[i] = e.target.value;
-                      setSvar(nyttSvar);
-                    }}
-                    ref={(el) => {
-                      inputRefs.current[i] = el;
-                    }}
-                    onBlur={() => sjekkEtt(i)}
-                    onKeyDown={(e) => {
-                      if (e.key !== "Enter") return;
-                      sjekkEtt(i);
-                      inputRefs.current[i + 1]?.focus();
-                    }}
-                    disabled={sjekket[i]}
-                    className={`w-20 text-center text-2xl font-bold border-2 rounded-xl py-1 focus:outline-none ${
-                      riktig === true
-                        ? "border-green-400 bg-green-50"
-                        : riktig === false
-                        ? "border-red-400 bg-red-50"
-                        : "border-blue-300 focus:border-blue-500 bg-white"
-                    }`}
-                    placeholder="?"
-                  />
-                  {riktig === true && (
-                    <span className="text-2xl shrink-0">✅</span>
-                  )}
-                  {riktig === false && (
-                    <span className="text-lg font-bold text-red-500 shrink-0">
-                      = {o.svar} ❌
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-
-            {!alleSjekket && (
-              <button
-                onClick={sjekkAlle}
-                className="mt-2 bg-blue-400 hover:bg-blue-500 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-blue-600 transition-colors self-start shadow"
-              >
-                Sjekk svar! 🔍
-              </button>
-            )}
-            {alleSjekket && (
-              <button
-                onClick={genererOppgaver}
-                className="mt-2 bg-green-500 hover:bg-green-600 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 transition-colors self-start shadow"
-              >
-                Ny runde! 🎲
-              </button>
-            )}
-          </div>
+          <OppgaveListe
+            oppgaver={oppgaver}
+            leggTilPoeng={leggTilPoeng}
+            onNyRunde={genererOppgaver}
+          />
         )}
       </section>
     </div>
@@ -387,126 +250,14 @@ function lagLilyOppgaver(): Oppgave[] {
 
 function LilyTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
   const [oppgaver, setOppgaver] = useState<Oppgave[]>(lagLilyOppgaver);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const [svar, setSvar] = useState<string[]>(() => Array(20).fill(""));
-  const [sjekket, setSjekket] = useState<boolean[]>(() => Array(20).fill(false));
-
-  function sjekkEtt(i: number) {
-    if (svar[i] === "" || sjekket[i]) return;
-    setSjekket((prev) => {
-      const neste = [...prev];
-      neste[i] = true;
-      return neste;
-    });
-    if (Number(svar[i]) === oppgaver[i].svar) {
-      leggTilPoeng(poengForOppgave(oppgaver[i]));
-    }
-  }
-
-  function sjekkAlle() {
-    const nySjekket = svar.map((s) => s !== "");
-    setSjekket(nySjekket);
-    oppgaver.forEach((o, i) => {
-      if (!sjekket[i] && nySjekket[i] && Number(svar[i]) === o.svar) {
-        leggTilPoeng(poengForOppgave(o));
-      }
-    });
-  }
-
-  function nyRunde() {
-    setOppgaver(lagLilyOppgaver());
-    setSvar(Array(20).fill(""));
-    setSjekket(Array(20).fill(false));
-  }
-
-  const alleSjekket = sjekket.length > 0 && sjekket.every(Boolean);
-  const antallRiktige = oppgaver.filter(
-    (o, i) => sjekket[i] && Number(svar[i]) === o.svar
-  ).length;
 
   return (
     <section className="flex-1 p-6 overflow-y-auto">
-      <div className="flex flex-col gap-4 max-w-xl">
-        {alleSjekket && (
-          <p className="text-2xl font-black text-center text-green-700 mb-2">
-            {antallRiktige} / {oppgaver.length} riktige!{" "}
-            {antallRiktige === oppgaver.length ? "🎉" : "💪"}
-          </p>
-        )}
-
-        {oppgaver.map((o, i) => {
-          const riktig = sjekket[i] ? Number(svar[i]) === o.svar : null;
-          return (
-            <div
-              key={i}
-              className={`flex items-center gap-3 p-3 rounded-2xl border-2 ${
-                riktig === true
-                  ? "border-green-400 bg-green-50"
-                  : riktig === false
-                  ? "border-red-300 bg-red-50"
-                  : "border-yellow-200 bg-white"
-              }`}
-            >
-              <span className="text-xl font-bold text-gray-400 w-7 text-right shrink-0">
-                {i + 1}.
-              </span>
-              <span className="text-2xl font-bold text-purple-500">{o.a}</span>
-              <span className="text-2xl font-bold text-gray-500">−</span>
-              <span className="text-2xl font-bold text-green-500">{o.b}</span>
-              <span className="text-2xl font-bold text-gray-500">=</span>
-              <input
-                type="number"
-                value={svar[i]}
-                onChange={(e) => {
-                  const nyttSvar = [...svar];
-                  nyttSvar[i] = e.target.value;
-                  setSvar(nyttSvar);
-                }}
-                ref={(el) => { inputRefs.current[i] = el; }}
-                onBlur={() => sjekkEtt(i)}
-                onKeyDown={(e) => {
-                  if (e.key !== "Enter") return;
-                  sjekkEtt(i);
-                  inputRefs.current[i + 1]?.focus();
-                }}
-                disabled={sjekket[i]}
-                className={`w-24 text-center text-2xl font-bold border-2 rounded-xl py-1 focus:outline-none ${
-                  riktig === true
-                    ? "border-green-400 bg-green-50"
-                    : riktig === false
-                    ? "border-red-400 bg-red-50"
-                    : "border-blue-300 focus:border-blue-500 bg-white"
-                }`}
-                placeholder="?"
-                autoFocus={i === 0}
-              />
-              {riktig === true && <span className="text-2xl shrink-0">✅</span>}
-              {riktig === false && (
-                <span className="text-lg font-bold text-red-500 shrink-0">
-                  = {o.svar} ❌
-                </span>
-              )}
-            </div>
-          );
-        })}
-
-        {!alleSjekket && (
-          <button
-            onClick={sjekkAlle}
-            className="mt-2 bg-blue-400 hover:bg-blue-500 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-blue-600 transition-colors self-start shadow"
-          >
-            Sjekk svar! 🔍
-          </button>
-        )}
-        {alleSjekket && (
-          <button
-            onClick={nyRunde}
-            className="mt-2 bg-green-500 hover:bg-green-600 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 transition-colors self-start shadow"
-          >
-            Ny runde! 🎲
-          </button>
-        )}
-      </div>
+      <OppgaveListe
+        oppgaver={oppgaver}
+        leggTilPoeng={leggTilPoeng}
+        onNyRunde={() => setOppgaver(lagLilyOppgaver())}
+      />
     </section>
   );
 }
