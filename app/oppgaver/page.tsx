@@ -6,7 +6,7 @@ import Link from "next/link";
 // ── Typer ────────────────────────────────────────────────────────────────────
 
 type Operasjon = "+" | "-" | "×" | "÷";
-type TabId = "oppgaver" | "lily";
+type TabId = "oppgaver" | "lily" | "test";
 
 interface Oppgave {
   a: number;
@@ -80,6 +80,7 @@ const ALLE_OPERASJONER: Operasjon[] = ["+", "-", "×", "÷"];
 const TABS: { id: TabId; label: string }[] = [
   { id: "oppgaver", label: "Oppgaver" },
   { id: "lily", label: "Lily" },
+  { id: "test", label: "Test" },
 ];
 
 // ── Poengvisning ──────────────────────────────────────────────────────────────
@@ -479,6 +480,7 @@ export default function OppgaverSide() {
       <div className="flex flex-col flex-1 bg-white border-2 border-yellow-300 mx-2 mb-2 rounded-b-2xl rounded-tr-2xl overflow-hidden">
         {aktifTab === "oppgaver" && <OppgaverTab leggTilPoeng={leggTilPoeng} />}
         {aktifTab === "lily" && <LilyTab leggTilPoeng={leggTilPoeng} />}
+        {aktifTab === "test" && <div />}
       </div>
     </main>
   );
