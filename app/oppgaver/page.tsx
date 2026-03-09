@@ -13,35 +13,43 @@ interface Oppgave {
 }
 
 interface Innstillinger {
-  maksVerdi: number;
+  sifrerA: number;
+  sifrerB: number;
   operasjoner: Operasjon[];
   antallOppgaver: number;
 }
 
+// Returnerer et tilfeldig tall med nøyaktig n sifre
+function tilfeldigMedSifre(n: number): number {
+  const min = n === 1 ? 1 : Math.pow(10, n - 1);
+  const max = Math.pow(10, n) - 1;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function lagOppgave(innstillinger: Innstillinger): Oppgave {
-  const { maksVerdi, operasjoner } = innstillinger;
+  const { sifrerA, sifrerB, operasjoner } = innstillinger;
   const operasjon = operasjoner[Math.floor(Math.random() * operasjoner.length)];
 
   if (operasjon === "+") {
-    const a = Math.floor(Math.random() * maksVerdi) + 1;
-    const b = Math.floor(Math.random() * maksVerdi) + 1;
+    const a = tilfeldigMedSifre(sifrerA);
+    const b = tilfeldigMedSifre(sifrerB);
     return { a, b, operasjon, svar: a + b };
   }
   if (operasjon === "-") {
-    const a = Math.floor(Math.random() * maksVerdi) + 1;
-    const b = Math.floor(Math.random() * a) + 1;
+    const x = tilfeldigMedSifre(sifrerA);
+    const y = tilfeldigMedSifre(sifrerB);
+    // sørg for at a >= b slik at svaret ikke er negativt
+    const [a, b] = x >= y ? [x, y] : [y, x];
     return { a, b, operasjon, svar: a - b };
   }
   if (operasjon === "×") {
-    const grense = Math.min(maksVerdi, 10);
-    const a = Math.floor(Math.random() * grense) + 1;
-    const b = Math.floor(Math.random() * grense) + 1;
+    const a = tilfeldigMedSifre(sifrerA);
+    const b = tilfeldigMedSifre(sifrerB);
     return { a, b, operasjon, svar: a * b };
   }
-  // ÷ — garantert heltallssvar
-  const grense = Math.min(maksVerdi, 10);
-  const b = Math.floor(Math.random() * grense) + 1;
-  const svar = Math.floor(Math.random() * grense) + 1;
+  // ÷ — garantert heltallssvar; b bruker sifrerB, kvotienten er 1–9
+  const b = tilfeldigMedSifre(sifrerB);
+  const svar = Math.floor(Math.random() * 9) + 1;
   return { a: b * svar, b, operasjon, svar };
 }
 
@@ -51,13 +59,14 @@ function lagOppgaver(innstillinger: Innstillinger): Oppgave[] {
   );
 }
 
-const MAKS_VERDIER = [10, 20, 50, 100];
+const SIFFER_VALG = [1, 2, 3];
 const ANTALL_VALG = [5, 10, 15, 20];
 const ALLE_OPERASJONER: Operasjon[] = ["+", "-", "×", "÷"];
 
 export default function OppgaverSide() {
   const [innstillinger, setInnstillinger] = useState<Innstillinger>({
-    maksVerdi: 10,
+    sifrerA: 1,
+    sifrerB: 1,
     operasjoner: ["+"],
     antallOppgaver: 5,
   });
@@ -113,26 +122,30 @@ export default function OppgaverSide() {
         <aside className="w-full md:w-72 p-6 border-b-2 md:border-b-0 md:border-r-2 border-yellow-300 flex flex-col gap-6">
           <h2 className="text-2xl font-black text-gray-700">Innstillinger</h2>
 
-          <div>
-            <p className="font-bold text-gray-600 mb-2">Maks tall</p>
-            <div className="flex flex-wrap gap-2">
-              {MAKS_VERDIER.map((v) => (
-                <button
-                  key={v}
-                  onClick={() =>
-                    setInnstillinger((p) => ({ ...p, maksVerdi: v }))
-                  }
-                  className={`px-4 py-2 rounded-xl font-bold border-2 transition-colors ${
-                    innstillinger.maksVerdi === v
-                      ? "bg-green-400 border-green-600 text-white"
-                      : "bg-white border-gray-300 text-gray-600 hover:border-green-400"
-                  }`}
-                >
-                  {v}
-                </button>
-              ))}
+          {(["sifrerA", "sifrerB"] as const).map((felt, idx) => (
+            <div key={felt}>
+              <p className="font-bold text-gray-600 mb-2">
+                Sifre i {idx === 0 ? "1." : "2."} tall
+              </p>
+              <div className="flex gap-2">
+                {SIFFER_VALG.map((n) => (
+                  <button
+                    key={n}
+                    onClick={() =>
+                      setInnstillinger((p) => ({ ...p, [felt]: n }))
+                    }
+                    className={`px-4 py-2 rounded-xl font-bold border-2 transition-colors ${
+                      innstillinger[felt] === n
+                        ? "bg-green-400 border-green-600 text-white"
+                        : "bg-white border-gray-300 text-gray-600 hover:border-green-400"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          ))}
 
           <div>
             <p className="font-bold text-gray-600 mb-2">Regnearter</p>
