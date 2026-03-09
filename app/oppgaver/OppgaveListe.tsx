@@ -143,9 +143,19 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
             />
             {riktig === true && <span className="text-2xl shrink-0">✅</span>}
             {riktig === false && (
-              <span className="text-lg font-bold text-red-500 shrink-0">
-                = {o.svar} ❌
-              </span>
+              <>
+                <span className="text-2xl shrink-0">❌</span>
+                <button
+                  onClick={() => {
+                    setSvar((prev) => { const n = [...prev]; n[i] = ""; return n; });
+                    setSjekket((prev) => { const n = [...prev]; n[i] = false; return n; });
+                    inputRefs.current[i]?.focus();
+                  }}
+                  className="text-sm font-bold text-red-500 underline shrink-0"
+                >
+                  Prøv igjen
+                </button>
+              </>
             )}
           </div>
         );
