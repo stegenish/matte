@@ -237,27 +237,27 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
 
 // ── LilyTab ───────────────────────────────────────────────────────────────────
 
-// Første tall: 2 eller 3 sifre. Andre tall: 1–3 sifre. Garantert a >= b.
-function lagLilyOppgave(): Oppgave {
-  const a = tilfeldigMedSifre(Math.random() < 0.5 ? 2 : 3);
-  const b = Math.floor(Math.random() * 3) + 1; // 1, 2 eller 3
-  return { a, b, operasjon: "-", svar: a - b };
-}
-
-function lagLilyOppgaver(): Oppgave[] {
-  return Array.from({ length: 20 }, lagLilyOppgave);
-}
+// Tallene som slutter på 9 opp til 100, parvis med svaret minus 1
+const TALL_MED_9 = [9, 19, 29, 39, 49, 59, 69, 79, 89, 99];
+const LILY_PLUSS: Oppgave[] = TALL_MED_9.map((a) => ({ a, b: 1, operasjon: "+", svar: a + 1 }));
+const LILY_MINUS: Oppgave[] = TALL_MED_9.map((a) => ({ a: a + 1, b: 1, operasjon: "-", svar: a }));
 
 function LilyTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
-  const [oppgaver, setOppgaver] = useState<Oppgave[]>(lagLilyOppgaver);
+  const [plussOppgaver, setPlussOppgaver] = useState<Oppgave[]>(LILY_PLUSS);
+  const [minusOppgaver, setMinusOppgaver] = useState<Oppgave[]>(LILY_MINUS);
+
+  function nyRunde() {
+    // Spread for å lage ny arrayreferanse → utløser useEffect-reset i OppgaveListe
+    setPlussOppgaver([...LILY_PLUSS]);
+    setMinusOppgaver([...LILY_MINUS]);
+  }
 
   return (
     <section className="flex-1 p-6 overflow-y-auto">
-      <OppgaveListe
-        oppgaver={oppgaver}
-        leggTilPoeng={leggTilPoeng}
-        onNyRunde={() => setOppgaver(lagLilyOppgaver())}
-      />
+      <div className="flex gap-8 flex-wrap">
+        <OppgaveListe oppgaver={plussOppgaver} leggTilPoeng={leggTilPoeng} onNyRunde={nyRunde} />
+        <OppgaveListe oppgaver={minusOppgaver} leggTilPoeng={leggTilPoeng} onNyRunde={nyRunde} />
+      </div>
     </section>
   );
 }
