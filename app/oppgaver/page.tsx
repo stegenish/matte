@@ -376,13 +376,8 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
 
 // Første tall: 2 eller 3 sifre. Andre tall: 1–3 sifre. Garantert a >= b.
 function lagLilyOppgave(): Oppgave {
-  let a: number, b: number;
-  do {
-    const sifrerA = Math.random() < 0.5 ? 2 : 3;
-    const sifrerB = Math.floor(Math.random() * 3) + 1;
-    a = tilfeldigMedSifre(sifrerA);
-    b = tilfeldigMedSifre(sifrerB);
-  } while (b > a);
+  const a = tilfeldigMedSifre(Math.random() < 0.5 ? 2 : 3);
+  const b = Math.floor(Math.random() * 3) + 1; // 1, 2 eller 3
   return { a, b, operasjon: "-", svar: a - b };
 }
 
