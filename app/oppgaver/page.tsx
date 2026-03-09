@@ -237,10 +237,17 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
 
 // ── LilyTab ───────────────────────────────────────────────────────────────────
 
-// Tallene som slutter på 9 opp til 100, parvis med svaret minus 1
+// Tallene som slutter på 9 (+1) og 8 (+2) opp til 100, parvis med svaret minus tillegget
 const TALL_MED_9 = [9, 19, 29, 39, 49, 59, 69, 79, 89, 99];
-const LILY_PLUSS: Oppgave[] = TALL_MED_9.map((a) => ({ a, b: 1, operasjon: "+", svar: a + 1 }));
-const LILY_MINUS: Oppgave[] = TALL_MED_9.map((a) => ({ a: a + 1, b: 1, operasjon: "-", svar: a }));
+const TALL_MED_8 = [8, 18, 28, 38, 48, 58, 68, 78, 88, 98];
+const LILY_PLUSS: Oppgave[] = [
+  ...TALL_MED_9.map((a) => ({ a, b: 1, operasjon: "+" as Operasjon, svar: a + 1 })),
+  ...TALL_MED_8.map((a) => ({ a, b: 2, operasjon: "+" as Operasjon, svar: a + 2 })),
+];
+const LILY_MINUS: Oppgave[] = [
+  ...TALL_MED_9.map((a) => ({ a: a + 1, b: 1, operasjon: "-" as Operasjon, svar: a })),
+  ...TALL_MED_8.map((a) => ({ a: a + 2, b: 2, operasjon: "-" as Operasjon, svar: a })),
+];
 
 function LilyTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
   const [plussOppgaver, setPlussOppgaver] = useState<Oppgave[]>(LILY_PLUSS);
