@@ -111,8 +111,8 @@ function TabBar({
           onClick={() => onChange(tab.id)}
           className={`px-6 py-2 rounded-t-2xl font-black text-lg border-2 border-b-0 transition-colors ${
             aktiv === tab.id
-              ? "bg-white border-yellow-300 text-purple-600"
-              : "bg-yellow-200 border-yellow-300 text-gray-500 hover:bg-yellow-50"
+              ? "bg-yellow-200 border-yellow-300 text-purple-600"
+              : "bg-white border-yellow-300 text-gray-500 hover:bg-yellow-50"
           }`}
         >
           {tab.label}
