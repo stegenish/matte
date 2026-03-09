@@ -72,12 +72,22 @@ export default function OppgaverSide() {
   });
   const [oppgaver, setOppgaver] = useState<Oppgave[]>([]);
   const [svar, setSvar] = useState<string[]>([]);
-  const [sjekket, setSjekket] = useState(false);
+  const [sjekket, setSjekket] = useState<boolean[]>([]);
 
   function genererOppgaver() {
-    setOppgaver(lagOppgaver(innstillinger));
+    const nye = lagOppgaver(innstillinger);
+    setOppgaver(nye);
     setSvar(Array(innstillinger.antallOppgaver).fill(""));
-    setSjekket(false);
+    setSjekket(Array(innstillinger.antallOppgaver).fill(false));
+  }
+
+  function sjekkEtt(i: number) {
+    if (svar[i] === "") return;
+    setSjekket((prev) => {
+      const neste = [...prev];
+      neste[i] = true;
+      return neste;
+    });
   }
 
   function toggleOperasjon(op: Operasjon) {
@@ -94,9 +104,11 @@ export default function OppgaverSide() {
     });
   }
 
-  const antallRiktige = sjekket
-    ? oppgaver.filter((o, i) => Number(svar[i]) === o.svar).length
-    : 0;
+  const alleSjekket =
+    oppgaver.length > 0 && sjekket.length === oppgaver.length && sjekket.every(Boolean);
+  const antallRiktige = oppgaver.filter(
+    (o, i) => sjekket[i] && Number(svar[i]) === o.svar
+  ).length;
 
   return (
     <main
@@ -206,7 +218,7 @@ export default function OppgaverSide() {
             </div>
           ) : (
             <div className="flex flex-col gap-4 max-w-xl">
-              {sjekket && (
+              {alleSjekket && (
                 <p className="text-2xl font-black text-center text-green-700 mb-2">
                   {antallRiktige} / {oppgaver.length} riktige!{" "}
                   {antallRiktige === oppgaver.length ? "🎉" : "💪"}
@@ -214,7 +226,7 @@ export default function OppgaverSide() {
               )}
 
               {oppgaver.map((o, i) => {
-                const riktig = sjekket ? Number(svar[i]) === o.svar : null;
+                const riktig = sjekket[i] ? Number(svar[i]) === o.svar : null;
                 return (
                   <div
                     key={i}
@@ -247,7 +259,9 @@ export default function OppgaverSide() {
                         nyttSvar[i] = e.target.value;
                         setSvar(nyttSvar);
                       }}
-                      disabled={sjekket}
+                      onBlur={() => sjekkEtt(i)}
+                      onKeyDown={(e) => e.key === "Enter" && sjekkEtt(i)}
+                      disabled={sjekket[i]}
                       className={`w-20 text-center text-2xl font-bold border-2 rounded-xl py-1 focus:outline-none ${
                         riktig === true
                           ? "border-green-400 bg-green-50"
@@ -269,15 +283,15 @@ export default function OppgaverSide() {
                 );
               })}
 
-              {!sjekket && (
+              {!alleSjekket && (
                 <button
-                  onClick={() => setSjekket(true)}
+                  onClick={() => setSjekket(oppgaver.map((_, i) => svar[i] !== ""))}
                   className="mt-2 bg-blue-400 hover:bg-blue-500 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-blue-600 transition-colors self-start shadow"
                 >
                   Sjekk svar! 🔍
                 </button>
               )}
-              {sjekket && (
+              {alleSjekket && (
                 <button
                   onClick={genererOppgaver}
                   className="mt-2 bg-green-500 hover:bg-green-600 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 transition-colors self-start shadow"
