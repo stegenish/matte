@@ -129,11 +129,18 @@ function Gangetabell() {
           {TALL.map((a) => (
             <tr key={a}>
               <th className="w-8 h-8 bg-purple-100 text-purple-700 border border-purple-200">{a}</th>
-              {TALL.map((b) => (
-                <td key={b} className="w-8 h-8 border border-yellow-200 text-gray-700 hover:bg-yellow-100">
-                  {a * b}
-                </td>
-              ))}
+              {TALL.map((b) => {
+                const mørkRad = a % 2 === 0;
+                const mørkKol = b % 2 === 0;
+                const bg = mørkRad && mørkKol ? "bg-yellow-100"
+                         : mørkRad || mørkKol ? "bg-yellow-50"
+                         : "bg-white";
+                return (
+                  <td key={b} className={`w-8 h-8 border border-yellow-200 text-gray-700 hover:bg-orange-100 ${bg}`}>
+                    {a * b}
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
