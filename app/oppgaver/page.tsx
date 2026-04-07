@@ -114,12 +114,12 @@ function Gangetabell() {
   return (
     <div className="shrink-0 overflow-auto">
       <h2 className="text-lg font-black text-gray-600 mb-2 text-center">Gangetabell</h2>
-      <table className="border-collapse text-center text-sm font-bold">
+      <table className="border-collapse text-center text-base font-bold">
         <thead>
           <tr>
-            <th className="w-8 h-8 bg-purple-100 text-purple-700 border border-purple-200">×</th>
+            <th className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">×</th>
             {TALL.map((n) => (
-              <th key={n} className="w-8 h-8 bg-purple-100 text-purple-700 border border-purple-200">
+              <th key={n} className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">
                 {n}
               </th>
             ))}
@@ -128,7 +128,7 @@ function Gangetabell() {
         <tbody>
           {TALL.map((a) => (
             <tr key={a}>
-              <th className="w-8 h-8 bg-purple-100 text-purple-700 border border-purple-200">{a}</th>
+              <th className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">{a}</th>
               {TALL.map((b) => {
                 const mørkRad = a % 2 === 0;
                 const mørkKol = b % 2 === 0;
@@ -136,7 +136,7 @@ function Gangetabell() {
                          : mørkRad || mørkKol ? "bg-yellow-50"
                          : "bg-white";
                 return (
-                  <td key={b} className={`w-8 h-8 border border-yellow-200 text-gray-700 hover:bg-orange-100 ${bg}`}>
+                  <td key={b} className={`w-12 h-12 border border-yellow-200 text-gray-700 hover:bg-orange-100 ${bg}`}>
                     {a * b}
                   </td>
                 );
