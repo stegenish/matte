@@ -106,6 +106,42 @@ function TabBar({
   );
 }
 
+// ── Gangetabell ───────────────────────────────────────────────────────────────
+
+const TALL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+function Gangetabell() {
+  return (
+    <div className="shrink-0 overflow-auto">
+      <h2 className="text-lg font-black text-gray-600 mb-2 text-center">Gangetabell</h2>
+      <table className="border-collapse text-center text-sm font-bold">
+        <thead>
+          <tr>
+            <th className="w-8 h-8 bg-purple-100 text-purple-700 border border-purple-200">×</th>
+            {TALL.map((n) => (
+              <th key={n} className="w-8 h-8 bg-purple-100 text-purple-700 border border-purple-200">
+                {n}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {TALL.map((a) => (
+            <tr key={a}>
+              <th className="w-8 h-8 bg-purple-100 text-purple-700 border border-purple-200">{a}</th>
+              {TALL.map((b) => (
+                <td key={b} className="w-8 h-8 border border-yellow-200 text-gray-700 hover:bg-yellow-100">
+                  {a * b}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // ── OppgaverTab ───────────────────────────────────────────────────────────────
 
 function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
@@ -214,22 +250,25 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
         </button>
       </aside>
 
-      {/* Høyre: oppgaver */}
-      <section className="flex-1 p-6 overflow-y-auto">
-        {oppgaver.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-400">
-            <p className="text-6xl">🧮</p>
-            <p className="text-xl font-bold">
-              Trykk &quot;Generer!&quot; for å starte
-            </p>
-          </div>
-        ) : (
-          <OppgaveListe
-            oppgaver={oppgaver}
-            leggTilPoeng={leggTilPoeng}
-            onNyRunde={genererOppgaver}
-          />
-        )}
+      {/* Høyre: oppgaver + gangetabell */}
+      <section className="flex-1 p-6 overflow-y-auto flex gap-8 flex-wrap">
+        <div className="flex-1">
+          {oppgaver.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-400">
+              <p className="text-6xl">🧮</p>
+              <p className="text-xl font-bold">
+                Trykk &quot;Generer!&quot; for å starte
+              </p>
+            </div>
+          ) : (
+            <OppgaveListe
+              oppgaver={oppgaver}
+              leggTilPoeng={leggTilPoeng}
+              onNyRunde={genererOppgaver}
+            />
+          )}
+        </div>
+        <Gangetabell />
       </section>
     </div>
   );
