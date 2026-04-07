@@ -130,7 +130,13 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
                 if (onEnterAt) onEnterAt(i);
                 else inputRefs.current[i + 1]?.focus();
               }}
-              disabled={sjekket[i]}
+              disabled={riktig === true}
+              onClick={() => {
+                if (riktig === false) {
+                  setSvar((prev) => { const n = [...prev]; n[i] = ""; return n; });
+                  setSjekket((prev) => { const n = [...prev]; n[i] = false; return n; });
+                }
+              }}
               autoFocus={i === 0}
               className={`w-24 text-center text-2xl font-bold border-2 rounded-xl py-1 focus:outline-none ${
                 riktig === true
@@ -143,19 +149,7 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
             />
             {riktig === true && <span className="text-2xl shrink-0">✅</span>}
             {riktig === false && (
-              <>
-                <span className="text-2xl shrink-0">❌</span>
-                <button
-                  onClick={() => {
-                    setSvar((prev) => { const n = [...prev]; n[i] = ""; return n; });
-                    setSjekket((prev) => { const n = [...prev]; n[i] = false; return n; });
-                    inputRefs.current[i]?.focus();
-                  }}
-                  className="text-sm font-bold text-red-500 underline shrink-0"
-                >
-                  Prøv igjen
-                </button>
-              </>
+              <span className="text-2xl shrink-0">❌</span>
             )}
           </div>
         );
