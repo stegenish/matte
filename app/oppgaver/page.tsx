@@ -6,7 +6,7 @@ import OppgaveListe, { type Oppgave, type Operasjon, type OppgaveListeHandle } f
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
-type TabId = "oppgaver" | "lily" | "test";
+type TabId = "oppgaver" | "lily";
 
 interface Innstillinger {
   sifrerA: number;
@@ -64,7 +64,6 @@ const ALLE_OPERASJONER: Operasjon[] = ["+", "-", "×", "÷"];
 const TABS: { id: TabId; label: string }[] = [
   { id: "oppgaver", label: "Oppgaver" },
   { id: "lily", label: "Lily" },
-  { id: "test", label: "Test" },
 ];
 
 // ── Poengvisning ──────────────────────────────────────────────────────────────
@@ -340,10 +339,7 @@ export default function OppgaverSide() {
   }
 
   return (
-    <main
-      className="min-h-screen bg-yellow-100 flex flex-col"
-      style={{ fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive" }}
-    >
+    <main className="min-h-screen bg-yellow-100 flex flex-col">
       {/* Topp-linje */}
       <div className="flex items-center px-6 py-4">
         <Link
@@ -366,7 +362,6 @@ export default function OppgaverSide() {
       <div className="flex flex-col flex-1 bg-white border-2 border-yellow-300 mx-2 mb-2 rounded-b-2xl rounded-tr-2xl overflow-hidden">
         {aktifTab === "oppgaver" && <OppgaverTab leggTilPoeng={leggTilPoeng} />}
         {aktifTab === "lily" && <LilyTab leggTilPoeng={leggTilPoeng} />}
-        {aktifTab === "test" && <div />}
       </div>
     </main>
   );

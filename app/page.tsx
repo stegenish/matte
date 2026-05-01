@@ -3,10 +3,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-yellow-100 py-16">
-      <h1
-        className="text-center px-6 leading-tight font-black tracking-wide"
-        style={{ fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive" }}
-      >
+      <h1 className="text-center px-6 leading-tight font-black tracking-wide">
         <span className="block text-6xl md:text-8xl text-pink-500 drop-shadow-md mb-2">
           Hei
         </span>
@@ -24,7 +21,6 @@ export default function Home() {
       <Link
         href="/oppgaver"
         className="mt-12 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-3xl font-black px-12 py-5 rounded-3xl border-4 border-green-700 transition-colors shadow-lg"
-        style={{ fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive" }}
       >
         Start!
       </Link>
