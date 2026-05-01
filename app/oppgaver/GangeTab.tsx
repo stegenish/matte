@@ -18,6 +18,7 @@ import {
 } from "@/src/domene/streak";
 import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
+import { useProfil } from "@/src/komponenter/ProfilProvider";
 
 interface Props {
   leggTilPoeng: (p: number) => void;
@@ -181,6 +182,7 @@ function GangeOppgaveListe({
     Array(oppgaver.length).fill(false),
   );
   const [streak, setStreak] = useState<StreakTilstand>(nyStreak);
+  const { registrerSvar } = useProfil();
 
   useEffect(() => {
     setSvarTekst(Array(oppgaver.length).fill(""));
@@ -191,10 +193,13 @@ function GangeOppgaveListe({
 
   function håndterSvar(i: number, erRett: boolean) {
     setSjekket((prev) => oppdaterIndex(prev, i, true));
+    const o = oppgaver[i];
+    const [min, max] = o.a <= o.b ? [o.a, o.b] : [o.b, o.a];
+    registrerSvar(`${min}×${max}`, erRett);
     if (erRett) {
       const r = etterRett(streak);
       setStreak(r.nyTilstand);
-      leggTilPoeng(poengForGangeOppgave(oppgaver[i]) + r.streakBonus);
+      leggTilPoeng(poengForGangeOppgave(o) + r.streakBonus);
     } else {
       setStreak(etterFeil(streak).nyTilstand);
     }

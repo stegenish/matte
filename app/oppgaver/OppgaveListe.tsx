@@ -11,6 +11,8 @@ import {
 } from "@/src/domene/streak";
 import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
+import { useProfil } from "@/src/komponenter/ProfilProvider";
+import { nøkkelForOppgave } from "@/src/domene/faktaStatus";
 import type { VisualiseringsType } from "@/src/domene/mønsterpakker";
 import { OppgaveRad } from "./OppgaveRad";
 
@@ -33,6 +35,7 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
   const [svar, setSvar] = useState<string[]>(() => Array(oppgaver.length).fill(""));
   const [sjekket, setSjekket] = useState<boolean[]>(() => Array(oppgaver.length).fill(false));
   const [streak, setStreak] = useState<StreakTilstand>(nyStreak);
+  const { registrerSvar } = useProfil();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useImperativeHandle(ref, () => ({
@@ -48,11 +51,14 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
 
   function sjekkEtt(i: number) {
     if (svar[i] === "" || sjekket[i]) return;
+    const o = oppgaver[i];
+    const erRett = Number(svar[i]) === o.svar;
     setSjekket((prev) => oppdaterIndex(prev, i, true));
-    if (Number(svar[i]) === oppgaver[i].svar) {
+    registrerSvar(nøkkelForOppgave(o), erRett);
+    if (erRett) {
       const r = etterRett(streak);
       setStreak(r.nyTilstand);
-      leggTilPoeng(poengForOppgave(oppgaver[i]) + r.streakBonus);
+      leggTilPoeng(poengForOppgave(o) + r.streakBonus);
     } else {
       setStreak(etterFeil(streak).nyTilstand);
     }
@@ -65,7 +71,9 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
     let lokalStreak = streak;
     oppgaver.forEach((o, i) => {
       if (sjekket[i] || !nySjekket[i]) return;
-      if (Number(svar[i]) === o.svar) {
+      const erRett = Number(svar[i]) === o.svar;
+      registrerSvar(nøkkelForOppgave(o), erRett);
+      if (erRett) {
         const r = etterRett(lokalStreak);
         lokalStreak = r.nyTilstand;
         leggTilPoeng(poengForOppgave(o) + r.streakBonus);

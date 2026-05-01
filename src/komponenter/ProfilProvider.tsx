@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { profilLager as standardLager } from "@/src/lagring/profilLager";
 import type { ProfilLager } from "@/src/lagring/profilLager";
 import { lagNyProfil, type Profil } from "@/src/domene/profil";
+import { oppdaterFaktaStatus } from "@/src/domene/faktaStatus";
 
 interface ProfilContextVerdi {
   aktivProfil: Profil | null;
@@ -13,6 +14,8 @@ interface ProfilContextVerdi {
   loggUt: () => void;
   oppdater: (oppdatert: Profil) => void;
   slett: (id: string) => void;
+  // Registrerer ett oppgave-svar: oppdaterer faktaStatus + statistikk på aktiv profil.
+  registrerSvar: (oppgaveNøkkel: string | null, riktig: boolean) => void;
   klar: boolean;
 }
 
@@ -71,6 +74,23 @@ export function ProfilProvider({ children, lager = standardLager }: Props) {
     if (aktivId === id) setAktivId(null);
   }
 
+  function registrerSvar(oppgaveNøkkel: string | null, riktig: boolean) {
+    if (!aktivProfil) return;
+    const oppdatertFakta = oppgaveNøkkel
+      ? oppdaterFaktaStatus(aktivProfil.faktaStatus, oppgaveNøkkel, riktig)
+      : aktivProfil.faktaStatus;
+    const oppdatertProfil: Profil = {
+      ...aktivProfil,
+      faktaStatus: oppdatertFakta,
+      statistikk: {
+        ...aktivProfil.statistikk,
+        totaltRiktige: aktivProfil.statistikk.totaltRiktige + (riktig ? 1 : 0),
+        totaltFeil: aktivProfil.statistikk.totaltFeil + (riktig ? 0 : 1),
+      },
+    };
+    oppdater(oppdatertProfil);
+  }
+
   return (
     <Ctx.Provider
       value={{
@@ -81,6 +101,7 @@ export function ProfilProvider({ children, lager = standardLager }: Props) {
         loggUt,
         oppdater,
         slett,
+        registrerSvar,
         klar,
       }}
     >

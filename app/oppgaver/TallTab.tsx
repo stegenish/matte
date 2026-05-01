@@ -16,6 +16,7 @@ import {
 } from "@/src/domene/streak";
 import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
+import { useProfil } from "@/src/komponenter/ProfilProvider";
 
 interface Props {
   leggTilPoeng: (p: number) => void;
@@ -93,6 +94,7 @@ function TallOppgaveListe({
     Array(oppgaver.length).fill(false),
   );
   const [streak, setStreak] = useState<StreakTilstand>(nyStreak);
+  const { registrerSvar } = useProfil();
 
   useEffect(() => {
     setValgt(Array(oppgaver.length).fill(null));
@@ -103,6 +105,7 @@ function TallOppgaveListe({
 
   function håndterSvar(i: number, erRett: boolean) {
     setSjekket((prev) => oppdaterIndex(prev, i, true));
+    registrerSvar(`tall:${oppgaver[i].tall}`, erRett);
     if (erRett) {
       const r = etterRett(streak);
       setStreak(r.nyTilstand);
