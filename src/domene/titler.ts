@@ -21,6 +21,33 @@ export const TITLER = [
 ] as const;
 
 export const ANTALL_NIVÅER = ADJEKTIV.length * TITLER.length;
+export const ANTALL_ETASJER = TITLER.length;
+
+// Tårnet vokser med én etasje per nye tittel (hvert fjerde nivå),
+// ikke hver gang adjektivet bytter. Dette gir mer betydningsfulle milepæler
+// på den visuelle progresjonen.
+export function tårnEtasjeForIndex(nivåIndex: number): number {
+  return Math.floor(nivåIndex / ADJEKTIV.length);
+}
+
+// Fun facts låses opp én per etasje. Etasje 0 er allerede synlig fra start.
+export const FUN_FACTS = [
+  "Velkommen til Mattetårnet! Hver gang du får ny tittel, vokser tårnet med én etasje.",
+  "Tallet 0 ble oppfunnet i India for over tusen år siden.",
+  "Matematikk er det eneste språket alle i verden forstår på samme måte.",
+  "1 + 2 + 3 + ... + 100 = 5050. Carl Gauss regnet det ut da han var 8 år.",
+  "Pi (π) har vi regnet ut til over 100 billioner desimaler — og det stopper aldri.",
+  "Et minutt har 60 sekunder. Det kommer fra babylonerne for 4000 år siden!",
+  "En sirkel har uendelig mange hjørner — eller ingen, avhengig av hvordan du teller.",
+  "Tallet 7 er det mest populære «favoritt-tallet» i verden.",
+  "Ordet «matematikk» kommer fra det greske ordet «máthēma» som betyr «det som læres».",
+  "Et kvadrat med sider på 10 har et areal på 100. Et med sider på 100 har et areal på 10 000.",
+  "Honningceller i et bikuberom har sekskanter — den mest effektive formen som finnes.",
+  "Edderkoppene er ikke insekter. De har 8 bein, mens insekter har 6.",
+  "Et sjakkbrett har 64 ruter. Hvis du dobler 1 ris-korn 64 ganger, får du flere korn enn det finnes på jorda.",
+  "Det finnes uendelig mange primtall — det viste Euklid for over 2000 år siden.",
+  "Mattefjellets toppmester regner med tall i søvne!",
+] as const;
 
 export interface Nivå {
   index: number;

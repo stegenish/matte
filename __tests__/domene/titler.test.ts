@@ -2,9 +2,12 @@ import {
   ADJEKTIV,
   TITLER,
   ANTALL_NIVÅER,
+  ANTALL_ETASJER,
+  FUN_FACTS,
   poengGrenseForNivå,
   nivåForIndex,
   nivåForPoeng,
+  tårnEtasjeForIndex,
 } from "@/src/domene/titler";
 
 describe("titler-data", () => {
@@ -88,5 +91,28 @@ describe("nivåForPoeng", () => {
     expect(nivåForPoeng(grense5).index).toBe(5);
     expect(nivåForPoeng(grense6 - 1).index).toBe(5);
     expect(nivåForPoeng(grense6).index).toBe(6);
+  });
+});
+
+describe("tårnEtasjeForIndex", () => {
+  it("etasje 0 dekker første tittel (alle adjektiv-syklus innen Tellestarter)", () => {
+    for (let i = 0; i < ADJEKTIV.length; i++) {
+      expect(tårnEtasjeForIndex(i)).toBe(0);
+    }
+  });
+
+  it("etasje øker når tittelen bytter", () => {
+    expect(tårnEtasjeForIndex(ADJEKTIV.length)).toBe(1);
+    expect(tårnEtasjeForIndex(ADJEKTIV.length * 2)).toBe(2);
+  });
+
+  it("siste etasje matcher siste tittel", () => {
+    expect(tårnEtasjeForIndex(ANTALL_NIVÅER - 1)).toBe(ANTALL_ETASJER - 1);
+  });
+});
+
+describe("FUN_FACTS", () => {
+  it("har minst én fakta per etasje", () => {
+    expect(FUN_FACTS.length).toBeGreaterThanOrEqual(ANTALL_ETASJER);
   });
 });

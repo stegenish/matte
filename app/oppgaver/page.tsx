@@ -9,7 +9,7 @@ import { lagOppgaver, type Innstillinger } from "@/src/domene/oppgaver";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
 import { Tittelvisning } from "@/src/komponenter/Tittelvisning";
 import { Tittelfeiring } from "@/src/komponenter/Tittelfeiring";
-import { nivåForPoeng, type Nivå } from "@/src/domene/titler";
+import { nivåForPoeng, tårnEtasjeForIndex, type Nivå } from "@/src/domene/titler";
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
@@ -319,7 +319,13 @@ export default function OppgaverSide() {
     if (!aktivProfil) return;
     const nyttPoeng = aktivProfil.poeng + p;
     const nyttNivå = nivåForPoeng(nyttPoeng);
-    oppdater({ ...aktivProfil, poeng: nyttPoeng, tittelIndex: nyttNivå.index });
+    const nyEtasje = tårnEtasjeForIndex(nyttNivå.index);
+    oppdater({
+      ...aktivProfil,
+      poeng: nyttPoeng,
+      tittelIndex: nyttNivå.index,
+      tårnEtasje: nyEtasje,
+    });
   }
 
   return (
