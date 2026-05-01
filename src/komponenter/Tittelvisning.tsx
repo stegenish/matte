@@ -20,13 +20,13 @@ export function Tittelvisning({ profil }: { profil: Profil }) {
       <p className="text-2xl font-black text-purple-600 text-center">
         {nivå.adjektiv} {nivå.tittel}
       </p>
-      <div className="flex items-center gap-2">
+      <div className="flex items-baseline gap-2">
         <span className="text-2xl">⭐</span>
         <span className="text-xl font-black text-gray-700">{profil.poeng}</span>
-        {!erMaks && (
-          <span className="text-sm text-gray-500 font-bold">
-            ({nesteGrense - profil.poeng} til neste)
-          </span>
+        {erMaks ? (
+          <span className="text-sm text-gray-500 font-bold">(maks!)</span>
+        ) : (
+          <span className="text-sm text-gray-500 font-bold">/ {nesteGrense}</span>
         )}
       </div>
       <div

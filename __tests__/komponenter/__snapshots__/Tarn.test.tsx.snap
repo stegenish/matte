@@ -6,27 +6,25 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
     class="flex flex-col items-center gap-3"
   >
     <svg
-      aria-label="Lily sitt mattetårn med 15 av 15 etasjer synlige"
+      aria-label="Lily sitt mattetårn med 15 av 15 etasjer bygget"
       class="w-40 md:w-52 drop-shadow-md"
-      viewBox="0 0 120 510"
+      viewBox="0 0 120 525"
     >
       <rect
         fill="#84cc16"
         height="30"
         width="120"
         x="0"
-        y="480"
+        y="495"
       />
       <rect
         fill="#65a30d"
         height="4"
         width="120"
         x="0"
-        y="478"
+        y="493"
       />
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fef3c7"
           height="28"
@@ -35,7 +33,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="442"
+          y="457"
         />
         <rect
           fill="#fef9c3"
@@ -45,12 +43,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="450"
+          y="465"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fde68a"
           height="28"
@@ -59,7 +55,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="414"
+          y="429"
         />
         <rect
           fill="#fef9c3"
@@ -69,12 +65,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="422"
+          y="437"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fcd34d"
           height="28"
@@ -83,7 +77,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="386"
+          y="401"
         />
         <rect
           fill="#fef9c3"
@@ -93,12 +87,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="394"
+          y="409"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fbbf24"
           height="28"
@@ -107,7 +99,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="358"
+          y="373"
         />
         <rect
           fill="#fef9c3"
@@ -117,12 +109,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="366"
+          y="381"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#f59e0b"
           height="28"
@@ -131,7 +121,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="330"
+          y="345"
         />
         <rect
           fill="#fef9c3"
@@ -141,12 +131,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="338"
+          y="353"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fb923c"
           height="28"
@@ -155,7 +143,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="302"
+          y="317"
         />
         <rect
           fill="#fef9c3"
@@ -165,12 +153,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="310"
+          y="325"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#f97316"
           height="28"
@@ -179,7 +165,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="274"
+          y="289"
         />
         <rect
           fill="#fef9c3"
@@ -189,12 +175,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="282"
+          y="297"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#ea580c"
           height="28"
@@ -203,7 +187,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="246"
+          y="261"
         />
         <rect
           fill="#fef9c3"
@@ -213,12 +197,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="254"
+          y="269"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#dc2626"
           height="28"
@@ -227,7 +209,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="218"
+          y="233"
         />
         <rect
           fill="#fef9c3"
@@ -237,12 +219,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="226"
+          y="241"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#e11d48"
           height="28"
@@ -251,7 +231,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="190"
+          y="205"
         />
         <rect
           fill="#fef9c3"
@@ -261,12 +241,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="198"
+          y="213"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#db2777"
           height="28"
@@ -275,7 +253,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="162"
+          y="177"
         />
         <rect
           fill="#fef9c3"
@@ -285,12 +263,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="170"
+          y="185"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#c026d3"
           height="28"
@@ -299,7 +275,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="134"
+          y="149"
         />
         <rect
           fill="#fef9c3"
@@ -309,12 +285,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="142"
+          y="157"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#a855f7"
           height="28"
@@ -323,7 +297,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="106"
+          y="121"
         />
         <rect
           fill="#fef9c3"
@@ -333,12 +307,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="114"
+          y="129"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#7c3aed"
           height="28"
@@ -347,7 +319,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="78"
+          y="93"
         />
         <rect
           fill="#fef9c3"
@@ -357,12 +329,10 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="86"
+          y="101"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#6366f1"
           height="28"
@@ -371,7 +341,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="50"
+          y="65"
         />
         <rect
           fill="#fef9c3"
@@ -381,7 +351,7 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="58"
+          y="73"
         />
       </g>
       <g>
@@ -390,12 +360,12 @@ exports[`Tårn snapshot fullt tårn med flagg 1`] = `
           stroke-width="2"
           x1="60"
           x2="60"
-          y1="50"
-          y2="15"
+          y1="65"
+          y2="30"
         />
         <polygon
           fill="#dc2626"
-          points="60,15 82,22 60,29"
+          points="60,30 82,37 60,44"
           stroke="#7f1d1d"
           stroke-width="1"
         />
@@ -429,27 +399,25 @@ exports[`Tårn snapshot første etasje 1`] = `
     class="flex flex-col items-center gap-3"
   >
     <svg
-      aria-label="Lily sitt mattetårn med 1 av 15 etasjer synlige"
+      aria-label="Lily sitt mattetårn med 1 av 15 etasjer bygget"
       class="w-40 md:w-52 drop-shadow-md"
-      viewBox="0 0 120 510"
+      viewBox="0 0 120 98"
     >
       <rect
         fill="#84cc16"
         height="30"
         width="120"
         x="0"
-        y="480"
+        y="68"
       />
       <rect
         fill="#65a30d"
         height="4"
         width="120"
         x="0"
-        y="478"
+        y="66"
       />
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fef3c7"
           height="28"
@@ -458,7 +426,7 @@ exports[`Tårn snapshot første etasje 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="442"
+          y="30"
         />
         <rect
           fill="#fef9c3"
@@ -468,343 +436,7 @@ exports[`Tårn snapshot første etasje 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="450"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="414"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="422"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="386"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="394"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="358"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="366"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="330"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="338"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="302"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="310"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="274"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="282"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="246"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="254"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="218"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="226"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="190"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="198"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="162"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="170"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="134"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="142"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="106"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="114"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="78"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="86"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="50"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="58"
+          y="38"
         />
       </g>
     </svg>
@@ -836,27 +468,25 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
     class="flex flex-col items-center gap-3"
   >
     <svg
-      aria-label="Lily sitt mattetårn med 8 av 15 etasjer synlige"
+      aria-label="Lily sitt mattetårn med 8 av 15 etasjer bygget"
       class="w-40 md:w-52 drop-shadow-md"
-      viewBox="0 0 120 510"
+      viewBox="0 0 120 294"
     >
       <rect
         fill="#84cc16"
         height="30"
         width="120"
         x="0"
-        y="480"
+        y="264"
       />
       <rect
         fill="#65a30d"
         height="4"
         width="120"
         x="0"
-        y="478"
+        y="262"
       />
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fef3c7"
           height="28"
@@ -865,7 +495,7 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="442"
+          y="226"
         />
         <rect
           fill="#fef9c3"
@@ -875,12 +505,10 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="450"
+          y="234"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fde68a"
           height="28"
@@ -889,7 +517,7 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="414"
+          y="198"
         />
         <rect
           fill="#fef9c3"
@@ -899,12 +527,10 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="422"
+          y="206"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fcd34d"
           height="28"
@@ -913,7 +539,7 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="386"
+          y="170"
         />
         <rect
           fill="#fef9c3"
@@ -923,12 +549,10 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="394"
+          y="178"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fbbf24"
           height="28"
@@ -937,7 +561,7 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="358"
+          y="142"
         />
         <rect
           fill="#fef9c3"
@@ -947,12 +571,10 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="366"
+          y="150"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#f59e0b"
           height="28"
@@ -961,7 +583,7 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="330"
+          y="114"
         />
         <rect
           fill="#fef9c3"
@@ -971,12 +593,10 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="338"
+          y="122"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#fb923c"
           height="28"
@@ -985,7 +605,7 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="302"
+          y="86"
         />
         <rect
           fill="#fef9c3"
@@ -995,12 +615,10 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="310"
+          y="94"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#f97316"
           height="28"
@@ -1009,7 +627,7 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="274"
+          y="58"
         />
         <rect
           fill="#fef9c3"
@@ -1019,12 +637,10 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="282"
+          y="66"
         />
       </g>
-      <g
-        opacity="1"
-      >
+      <g>
         <rect
           fill="#ea580c"
           height="28"
@@ -1033,7 +649,7 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="2"
           width="80"
           x="20"
-          y="246"
+          y="30"
         />
         <rect
           fill="#fef9c3"
@@ -1043,175 +659,7 @@ exports[`Tårn snapshot midt-tårn (etasje 7) 1`] = `
           stroke-width="1.5"
           width="12"
           x="54"
-          y="254"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="218"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="226"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="190"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="198"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="162"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="170"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="134"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="142"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="106"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="114"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="78"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="86"
-        />
-      </g>
-      <g
-        opacity="0.45"
-      >
-        <rect
-          fill="#e5e7eb"
-          height="28"
-          rx="3"
-          stroke="#9ca3af"
-          stroke-width="2"
-          width="80"
-          x="20"
-          y="50"
-        />
-        <rect
-          fill="#d1d5db"
-          height="12"
-          rx="1"
-          stroke="#9ca3af"
-          stroke-width="1.5"
-          width="12"
-          x="54"
-          y="58"
+          y="38"
         />
       </g>
     </svg>

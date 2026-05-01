@@ -1,0 +1,7 @@
+De delene av tårnet som ikke er åpnet opp enda bør være helt skjult, ikke bare grået ut.
+
+Pop up med ny tittel bør kunne trykkes vekk med Enter tasten
+
+Man får nye titler for ofte
+
+Poeng, i steder for "til neste" kan det stå "nåværende poeng"/"neste poengbehov"

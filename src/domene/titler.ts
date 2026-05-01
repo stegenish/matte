@@ -57,12 +57,13 @@ export interface Nivå {
   poengGrense: number;
 }
 
-// Poenggrenser vokser litt raskere enn lineært:
-// 0, 7, 11, 16, 22, 30, 38, 47, 58, 70, 83, ...
-// Tunable senere — bare juster denne funksjonen.
+// Poenggrenser:
+// 0, 29, 45, 65, 87, 113, 142, 174, 209, 248, 290, ...
+// Adjektiv-bytte hver ~30 poeng tidlig, tittel-bytte (4 nivåer) hver ~85+ poeng tidlig.
+// Tunable — bare juster denne funksjonen.
 export function poengGrenseForNivå(n: number): number {
   if (n <= 0) return 0;
-  return Math.round(5 + 2 * n + 0.3 * n * n);
+  return Math.round(15 + 12 * n + 1.5 * n * n);
 }
 
 export function nivåForIndex(index: number): Nivå {

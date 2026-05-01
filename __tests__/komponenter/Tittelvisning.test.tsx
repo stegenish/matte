@@ -29,17 +29,19 @@ describe("Tittelvisning", () => {
     expect(container.textContent).toContain(ADJEKTIV[0]);
   });
 
-  it('viser "(N til neste)"-tekst når man ikke er på maks', () => {
+  it('viser "/ N"-format med neste poenggrense når man ikke er på maks', () => {
     const profil = profilMedPoeng(2);
+    const grense1 = poengGrenseForNivå(1);
     const { container } = render(<Tittelvisning profil={profil} />);
-    expect(container.textContent).toContain("til neste");
+    expect(container.textContent).toContain(`/ ${grense1}`);
   });
 
-  it("skjuler 'til neste' når man er på maksnivå", () => {
+  it("viser 'maks!' når man er på maksnivå", () => {
     const grenseSiste = poengGrenseForNivå(ANTALL_NIVÅER - 1);
     const profil = profilMedPoeng(grenseSiste);
     const { container } = render(<Tittelvisning profil={profil} />);
-    expect(container.textContent).not.toContain("til neste");
+    expect(container.textContent).toContain("maks");
+    expect(container.textContent).not.toMatch(/\/ \d/);
   });
 
   it("har en progressbar med riktig aria-attributter", () => {

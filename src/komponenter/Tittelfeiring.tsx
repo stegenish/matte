@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import type { Nivå } from "@/src/domene/titler";
 
 interface Props {
@@ -11,6 +12,18 @@ const KONFETTI_EMOJIS = ["🎉", "✨", "⭐", "🌟", "🎊"];
 const ANTALL_KONFETTI = 30;
 
 export function Tittelfeiring({ nivå, onLukk }: Props) {
+  // Enter eller Escape lukker dialogen
+  useEffect(() => {
+    function håndterKey(e: KeyboardEvent) {
+      if (e.key === "Enter" || e.key === "Escape") {
+        e.preventDefault();
+        onLukk();
+      }
+    }
+    window.addEventListener("keydown", håndterKey);
+    return () => window.removeEventListener("keydown", håndterKey);
+  }, [onLukk]);
+
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
