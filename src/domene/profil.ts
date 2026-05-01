@@ -37,6 +37,7 @@ export interface Profil {
   dagligUtfordringSistGjort: string | null;
   funFactsSamlet: string[];
   lydAv: boolean;
+  lynRekord: number; // høyeste antall riktige i lyn-runde
 }
 
 export function lagNyProfil(navn: string, avatar: string): Profil {
@@ -60,6 +61,7 @@ export function lagNyProfil(navn: string, avatar: string): Profil {
     dagligUtfordringSistGjort: null,
     funFactsSamlet: [],
     lydAv: false,
+    lynRekord: 0,
   };
 }
 
@@ -121,6 +123,7 @@ export function fyllInnDefaults(rådata: unknown): Profil | null {
         : null,
     funFactsSamlet: Array.isArray(r.funFactsSamlet) ? r.funFactsSamlet : [],
     lydAv: typeof r.lydAv === "boolean" ? r.lydAv : false,
+    lynRekord: typeof r.lynRekord === "number" ? r.lynRekord : 0,
   };
 }
 

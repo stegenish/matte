@@ -19,6 +19,7 @@ import {
 import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
+import { LynRunde } from "./LynRunde";
 
 interface Props {
   leggTilPoeng: (p: number) => void;
@@ -41,9 +42,20 @@ export function GangeTab({ leggTilPoeng }: Props) {
     antallOppgaver: 10,
   });
   const [oppgaver, setOppgaver] = useState<GangeOppgave[]>([]);
+  const [lynRunde, setLynRunde] = useState(false);
 
   function generer() {
     setOppgaver(lagGangerunde(innstillinger));
+  }
+
+  if (lynRunde) {
+    return (
+      <LynRunde
+        tabeller={innstillinger.tabeller}
+        leggTilPoeng={leggTilPoeng}
+        onAvslutt={() => setLynRunde(false)}
+      />
+    );
   }
 
   function toggleTabell(t: number) {
@@ -134,13 +146,22 @@ export function GangeTab({ leggTilPoeng }: Props) {
           </div>
         </div>
 
-        <button
-          onClick={generer}
-          disabled={innstillinger.tabeller.length === 0}
-          className="mt-auto bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 disabled:border-gray-400 transition-colors shadow"
-        >
-          Generer! 🎲
-        </button>
+        <div className="mt-auto flex flex-col gap-2">
+          <button
+            onClick={generer}
+            disabled={innstillinger.tabeller.length === 0}
+            className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 disabled:border-gray-400 transition-colors shadow"
+          >
+            Generer! 🎲
+          </button>
+          <button
+            onClick={() => setLynRunde(true)}
+            disabled={innstillinger.tabeller.length === 0}
+            className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white text-lg font-black px-6 py-3 rounded-2xl border-2 border-orange-700 disabled:border-gray-400 transition-colors shadow"
+          >
+            ⚡ Lyn-runde 60s
+          </button>
+        </div>
       </aside>
 
       <section className="flex-1 p-6 overflow-y-auto">
