@@ -5,6 +5,7 @@ import { profilLager as standardLager } from "@/src/lagring/profilLager";
 import type { ProfilLager } from "@/src/lagring/profilLager";
 import { lagNyProfil, type Profil } from "@/src/domene/profil";
 import { oppdaterFaktaStatus } from "@/src/domene/faktaStatus";
+import { settLydAv, spillFeil, spillRett } from "@/src/lyd";
 
 interface ProfilContextVerdi {
   aktivProfil: Profil | null;
@@ -42,6 +43,11 @@ export function ProfilProvider({ children, lager = standardLager }: Props) {
   const aktivProfil =
     aktivId === null ? null : alleProfiler.find((p) => p.id === aktivId) ?? null;
 
+  // Synkroniser global lyd-mute med aktiv profil
+  useEffect(() => {
+    settLydAv(aktivProfil?.lydAv ?? false);
+  }, [aktivProfil?.lydAv]);
+
   function velg(id: string) {
     lager.settAktivId(id);
     setAktivId(id);
@@ -76,6 +82,8 @@ export function ProfilProvider({ children, lager = standardLager }: Props) {
 
   function registrerSvar(oppgaveNøkkel: string | null, riktig: boolean) {
     if (!aktivProfil) return;
+    if (riktig) spillRett();
+    else spillFeil();
     const oppdatertFakta = oppgaveNøkkel
       ? oppdaterFaktaStatus(aktivProfil.faktaStatus, oppgaveNøkkel, riktig)
       : aktivProfil.faktaStatus;

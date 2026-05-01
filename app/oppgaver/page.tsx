@@ -15,6 +15,7 @@ import { Tittelfeiring } from "@/src/komponenter/Tittelfeiring";
 import { Maskot } from "@/src/komponenter/Maskot";
 import { BossKamp } from "@/src/komponenter/BossKamp";
 import { nivåForPoeng, tårnEtasjeForIndex, type Nivå } from "@/src/domene/titler";
+import { spillOpprykk } from "@/src/lyd";
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
@@ -239,6 +240,10 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
 export default function OppgaverSide() {
   const router = useRouter();
   const { aktivProfil, oppdater, klar } = useProfil();
+  function toggleLyd() {
+    if (!aktivProfil) return;
+    oppdater({ ...aktivProfil, lydAv: !aktivProfil.lydAv });
+  }
   const [aktivTab, setAktivTab] = useState<TabId>("oppgaver");
   const [feiretNivå, setFeiretNivå] = useState<Nivå | null>(null);
   const [bossKamp, setBossKamp] = useState(false);
@@ -265,6 +270,7 @@ export default function OppgaverSide() {
     const forrige = forrigeNivåRef.current;
     if (forrige && forrige.profilId === aktivProfil.id && nå.index > forrige.index) {
       setFeiretNivå(nå);
+      spillOpprykk();
     }
     forrigeNivåRef.current = { profilId: aktivProfil.id, index: nå.index };
   }, [aktivProfil?.id, aktivProfil?.poeng]);
@@ -303,6 +309,14 @@ export default function OppgaverSide() {
         <h1 className="flex-1 text-center text-3xl font-black text-purple-600">
           Matteoppgaver
         </h1>
+        <button
+          onClick={toggleLyd}
+          className="text-xl hover:scale-110 transition-transform"
+          title={aktivProfil.lydAv ? "Skru på lyd" : "Skru av lyd"}
+          aria-label={aktivProfil.lydAv ? "Skru på lyd" : "Skru av lyd"}
+        >
+          {aktivProfil.lydAv ? "🔇" : "🔊"}
+        </button>
         <button
           onClick={() => setBossKamp(true)}
           className="text-2xl hover:scale-110 transition-transform"
