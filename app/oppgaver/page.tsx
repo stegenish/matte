@@ -13,6 +13,7 @@ import { useProfil } from "@/src/komponenter/ProfilProvider";
 import { Tittelvisning } from "@/src/komponenter/Tittelvisning";
 import { Tittelfeiring } from "@/src/komponenter/Tittelfeiring";
 import { Maskot } from "@/src/komponenter/Maskot";
+import { BossKamp } from "@/src/komponenter/BossKamp";
 import { nivåForPoeng, tårnEtasjeForIndex, type Nivå } from "@/src/domene/titler";
 
 // ── Typer ────────────────────────────────────────────────────────────────────
@@ -238,8 +239,9 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
 export default function OppgaverSide() {
   const router = useRouter();
   const { aktivProfil, oppdater, klar } = useProfil();
-  const [aktivTab, setAktifTab] = useState<TabId>("oppgaver");
+  const [aktivTab, setAktivTab] = useState<TabId>("oppgaver");
   const [feiretNivå, setFeiretNivå] = useState<Nivå | null>(null);
+  const [bossKamp, setBossKamp] = useState(false);
   // Holder forrige observerte nivå per profil. Detekterer transisjoner pålitelig
   // selv når flere oppdateringer batches (f.eks. fra "Sjekk alle").
   const forrigeNivåRef = useRef<{ profilId: string; index: number } | null>(null);
@@ -301,6 +303,14 @@ export default function OppgaverSide() {
         <h1 className="flex-1 text-center text-3xl font-black text-purple-600">
           Matteoppgaver
         </h1>
+        <button
+          onClick={() => setBossKamp(true)}
+          className="text-2xl hover:scale-110 transition-transform"
+          title="Møt Mattetrollet!"
+          aria-label="Møt Mattetrollet — boss-kamp"
+        >
+          🐲
+        </button>
         <span
           className="text-3xl"
           aria-label={`Innlogget som ${aktivProfil.navn}`}
@@ -316,7 +326,7 @@ export default function OppgaverSide() {
       </div>
 
       {/* Tabs */}
-      <TabBar aktiv={aktivTab} onChange={setAktifTab} />
+      <TabBar aktiv={aktivTab} onChange={setAktivTab} />
 
       {/* Tab-innhold */}
       <div className="flex flex-col flex-1 bg-white border-2 border-yellow-300 mx-2 mb-2 rounded-b-2xl rounded-tr-2xl overflow-hidden">
@@ -328,6 +338,12 @@ export default function OppgaverSide() {
 
       {feiretNivå && (
         <Tittelfeiring nivå={feiretNivå} onLukk={() => setFeiretNivå(null)} />
+      )}
+      {bossKamp && (
+        <BossKamp
+          onLukk={() => setBossKamp(false)}
+          leggTilPoeng={leggTilPoeng}
+        />
       )}
     </main>
   );
