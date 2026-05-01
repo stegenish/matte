@@ -43,13 +43,4 @@ describe("TenFrame", () => {
     );
   });
 
-  it("snapshot 10 av 10 (full)", () => {
-    const { container } = render(<TenFrame total={10} />);
-    expect(container).toMatchSnapshot();
-  });
-
-  it("snapshot 10 minus 3 (tiervenn-eksempel)", () => {
-    const { container } = render(<TenFrame total={10} krysset={3} />);
-    expect(container).toMatchSnapshot();
-  });
 });

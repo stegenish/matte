@@ -60,9 +60,3 @@ export function spillOpprykk(): void {
   tone(659, 0.1, "sine", 0.15, 0.1);
   tone(784, 0.2, "sine", 0.15, 0.2);
 }
-
-export function spillComeback(): void {
-  // Ned-så-opp som "comeback"
-  tone(330, 0.1, "sine");
-  tone(523, 0.15, "sine", 0.15, 0.12);
-}

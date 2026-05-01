@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import OppgaveListe from "./OppgaveListe";
@@ -251,9 +251,13 @@ export default function OppgaverSide() {
   const [bossKamp, setBossKamp] = useState(false);
   const [visPause, setVisPause] = useState(false);
   const [pauseVist, setPauseVist] = useState(false);
-  // Holder forrige observerte nivå per profil. Detekterer transisjoner pålitelig
-  // selv når flere oppdateringer batches (f.eks. fra "Sjekk alle").
-  const forrigeNivåRef = useRef<{ profilId: string; index: number } | null>(null);
+  // Sporer forrige observerte nivå per profil for å detektere opprykk.
+  // Bruker render-time state-update (React 19-mønster) i stedet for useEffect+ref
+  // for å unngå cascading useEffect-renders.
+  const [forrigeNivå, setForrigeNivå] = useState<{
+    profilId: string;
+    index: number;
+  } | null>(null);
 
   // Send tilbake til startside hvis ingen profil er valgt
   useEffect(() => {
@@ -270,24 +274,26 @@ export default function OppgaverSide() {
     return () => clearTimeout(id);
   }, [pauseVist]);
 
-  // Detekter nivåopprykk på den faktisk rendrede tilstanden.
-  // Effekten ser på den endelige tilstanden etter eventuell batching, så
-  // "Sjekk alle" som krysser flere nivåer på én gang feirer det høyeste nådde nivået.
-  useEffect(() => {
-    if (!aktivProfil) {
-      forrigeNivåRef.current = null;
-      // Lukk eventuell åpen feiring fra forrige profil ved utlogging
-      setFeiretNivå(null);
-      return;
-    }
+  // Detekter nivåopprykk under render. Hvis profilen byttes eller forsvinner,
+  // resettes baseline uten feiring. Hvis nivået øker for samme profil, åpnes
+  // feiringen (lyd spilles via egen effekt nedenfor).
+  if (aktivProfil) {
     const nå = nivåForPoeng(aktivProfil.poeng);
-    const forrige = forrigeNivåRef.current;
-    if (forrige && forrige.profilId === aktivProfil.id && nå.index > forrige.index) {
+    if (!forrigeNivå || forrigeNivå.profilId !== aktivProfil.id) {
+      setForrigeNivå({ profilId: aktivProfil.id, index: nå.index });
+    } else if (nå.index > forrigeNivå.index) {
+      setForrigeNivå({ profilId: aktivProfil.id, index: nå.index });
       setFeiretNivå(nå);
-      spillOpprykk();
     }
-    forrigeNivåRef.current = { profilId: aktivProfil.id, index: nå.index };
-  }, [aktivProfil?.id, aktivProfil?.poeng]);
+  } else if (forrigeNivå !== null) {
+    setForrigeNivå(null);
+    setFeiretNivå(null);
+  }
+
+  // Spill lyd når feiringen åpnes (men ikke når den lukkes)
+  useEffect(() => {
+    if (feiretNivå) spillOpprykk();
+  }, [feiretNivå]);
 
   if (!klar || !aktivProfil) {
     return (

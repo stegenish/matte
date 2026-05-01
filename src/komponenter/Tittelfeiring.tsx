@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import type { Nivå } from "@/src/domene/titler";
 
 interface Props {
@@ -10,6 +10,24 @@ interface Props {
 
 const KONFETTI_EMOJIS = ["🎉", "✨", "⭐", "🌟", "🎊"];
 const ANTALL_KONFETTI = 30;
+
+interface KonfettiBit {
+  venstre: number;
+  forsinkelse: number;
+  varighet: number;
+  emoji: string;
+}
+
+// Math.random må kalles utenfor render for å holde komponenten ren.
+// Konfetti-data beregnes én gang når dialogen åpnes.
+function lagKonfetti(): KonfettiBit[] {
+  return Array.from({ length: ANTALL_KONFETTI }, (_, i) => ({
+    venstre: (i / ANTALL_KONFETTI) * 100 + Math.random() * 5,
+    forsinkelse: Math.random() * 0.8,
+    varighet: 2 + Math.random() * 2,
+    emoji: KONFETTI_EMOJIS[i % KONFETTI_EMOJIS.length],
+  }));
+}
 
 export function Tittelfeiring({ nivå, onLukk }: Props) {
   // Enter eller Escape lukker dialogen
@@ -52,25 +70,23 @@ export function Tittelfeiring({ nivå, onLukk }: Props) {
 }
 
 function Konfetti() {
+  // Random én gang per åpning av dialog — ikke ved hver re-render
+  const biter = useMemo(() => lagKonfetti(), []);
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {Array.from({ length: ANTALL_KONFETTI }).map((_, i) => {
-        const venstre = (i / ANTALL_KONFETTI) * 100 + Math.random() * 5;
-        const forsinkelse = Math.random() * 0.8;
-        const varighet = 2 + Math.random() * 2;
-        const emoji = KONFETTI_EMOJIS[i % KONFETTI_EMOJIS.length];
+      {biter.map((bit, i) => {
         return (
           <span
             key={i}
             className="absolute text-3xl confetti-piece"
             style={{
-              left: `${venstre}%`,
+              left: `${bit.venstre}%`,
               top: "-3rem",
-              animationDelay: `${forsinkelse}s`,
-              animationDuration: `${varighet}s`,
+              animationDelay: `${bit.forsinkelse}s`,
+              animationDuration: `${bit.varighet}s`,
             }}
           >
-            {emoji}
+            {bit.emoji}
           </span>
         );
       })}

@@ -23,12 +23,15 @@ export default function UtfordringSide() {
     if (klar && !aktivProfil) router.replace("/");
   }, [klar, aktivProfil, router]);
 
-  // Ferskt sett oppgaver basert på profilen ved første render
-  const oppgaver = useMemo(
-    () => (aktivProfil ? lagDagligUtfordring(aktivProfil) : []),
-    [aktivProfil?.id], // bare regenerer når profilen byttes, ikke ved poeng-endring
+  // Genererer oppgavesettet kun når profilen byttes — ikke når poeng-/faktaStatus
+  // endres underveis i utfordringen. Innholdet er en snapshot av profil-tilstand
+  // ved sidebesøk, så vi vil bevisst ikke ta med aktivProfil i deps.
+  const profilId = aktivProfil?.id;
+  const oppgaver = useMemo(() => {
+    return aktivProfil ? lagDagligUtfordring(aktivProfil) : [];
+    // aktivProfil er bevisst ikke i deps — vi vil ha snapshot, ikke live data
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  );
+  }, [profilId]);
 
   if (!klar || !aktivProfil) {
     return (

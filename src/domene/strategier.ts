@@ -1,4 +1,5 @@
 import type { Oppgave } from "./typer";
+import { harTieroverganger } from "./poeng";
 
 // En strategi forklarer hvordan man kan tenke på en oppgave for å løse den.
 // Vises som hjelp etter feil svar.
@@ -10,20 +11,16 @@ export interface Strategi {
 
 // Velg riktig strategi for en gitt oppgave. null hvis ingen passer.
 export function strategiForOppgave(oppgave: Oppgave): Strategi | null {
-  if (oppgave.operasjon === "+" && harTieroverganger(oppgave.a, oppgave.b)) {
+  if (oppgave.operasjon === "+" && harTieroverganger(oppgave)) {
     return tieroverganerPluss(oppgave.a, oppgave.b);
   }
-  if (oppgave.operasjon === "-" && oppgave.a % 10 < oppgave.b % 10) {
+  if (oppgave.operasjon === "-" && harTieroverganger(oppgave)) {
     return tieroverganerMinus(oppgave.a, oppgave.b);
   }
   if (oppgave.operasjon === "×" && oppgave.a >= 2 && oppgave.b >= 2) {
     return distributivGanging(oppgave.a, oppgave.b);
   }
   return null;
-}
-
-function harTieroverganger(a: number, b: number): boolean {
-  return (a % 10) + (b % 10) >= 10;
 }
 
 function tieroverganerPluss(a: number, b: number): Strategi {

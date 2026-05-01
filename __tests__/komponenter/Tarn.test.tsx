@@ -6,18 +6,18 @@ import { Tårn } from "@/src/komponenter/Tårn";
 import { ANTALL_ETASJER } from "@/src/domene/titler";
 
 describe("Tårn", () => {
-  it("rendrer SVG med riktig antall etasjer i ARIA-label", () => {
+  it("har aria-label som beskriver antall bygde etasjer", () => {
     const { getByLabelText } = render(<Tårn etasje={0} navn="Lily" />);
     expect(getByLabelText(/Lily sitt mattetårn/)).toBeInTheDocument();
     expect(getByLabelText(/1 av 15/)).toBeInTheDocument();
   });
 
-  it("rendrer riktig antall i caption på første etasje", () => {
+  it("caption viser N / max etasjer", () => {
     const { container } = render(<Tårn etasje={0} navn="Lily" />);
     expect(container.textContent).toContain(`1 / ${ANTALL_ETASJER} etasjer`);
   });
 
-  it("rendrer caption for siste etasje", () => {
+  it("caption på siste etasje er fullt tårn", () => {
     const { container } = render(
       <Tårn etasje={ANTALL_ETASJER - 1} navn="Kian" />,
     );
@@ -26,20 +26,28 @@ describe("Tårn", () => {
     );
   });
 
-  it("snapshot første etasje", () => {
-    const { container } = render(<Tårn etasje={0} navn="Lily" />);
-    expect(container).toMatchSnapshot();
+  it("rendrer kun synlige etasjer (ikke utgrå plassholdere)", () => {
+    // Etasje 0 = 1 etasje synlig + 1 base (gress) = 2 hovedrektangler + vindu (1)
+    // Vi sjekker antall etasje-grupper, som tilsvarer (etasje + 1)
+    const { container } = render(<Tårn etasje={2} navn="Lily" />);
+    // 3 etasjer * (1 rect + 1 vindu rect) = 6 rect for etasjer + 2 grass rects
+    const rects = container.querySelectorAll("rect");
+    // 2 grass + 3 etasjer * 2 (kropp + vindu) = 8
+    expect(rects).toHaveLength(2 + 3 * 2);
   });
 
-  it("snapshot midt-tårn (etasje 7)", () => {
-    const { container } = render(<Tårn etasje={7} navn="Lily" />);
-    expect(container).toMatchSnapshot();
-  });
-
-  it("snapshot fullt tårn med flagg", () => {
+  it("flagg vises på siste etasje", () => {
     const { container } = render(
       <Tårn etasje={ANTALL_ETASJER - 1} navn="Lily" />,
     );
-    expect(container).toMatchSnapshot();
+    // Flagg = polygon-element
+    expect(container.querySelectorAll("polygon")).toHaveLength(1);
+  });
+
+  it("ingen flagg før siste etasje er nådd", () => {
+    const { container } = render(
+      <Tårn etasje={ANTALL_ETASJER - 2} navn="Lily" />,
+    );
+    expect(container.querySelectorAll("polygon")).toHaveLength(0);
   });
 });

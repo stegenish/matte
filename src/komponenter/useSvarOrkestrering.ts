@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   etterFeil,
   etterRett,
@@ -25,60 +25,59 @@ export interface SvarOrkestrering {
   // Registrer flere svar i sekvens (sjekkAlle-stil) — bevarer streak-akkumulering
   // gjennom løkken uten stale-closure-bugs
   håndterMange: (info: SvarInfo[]) => void;
-  // Nullstill streaken (kalles automatisk når oppgaver-referansen endres)
+  // Nullstill streaken
   nullstill: () => void;
 }
 
-// Felles strikk- og poeng-orkestrering for alle oppgavetyper.
-// Bruker ref for streak for å unngå stale closure ved synkron batch-håndtering.
+// Felles streak- og poeng-orkestrering for alle oppgavetyper.
+//
+// Designvalg: side-effekter (registrerSvar, leggTilPoeng) skjer utenfor setState-
+// callbacks så de ikke dobles i React Strict Mode. håndterMange bruker en lokal
+// variabel for streak-akkumulering gjennom batchet — håndterEtt og håndterMange
+// kalles én gang per brukerklikk, så closure-tilstand er ikke stale.
 export function useSvarOrkestrering(
   leggTilPoeng: (p: number) => void,
   oppgaverRef: unknown,
 ): SvarOrkestrering {
   const [streak, setStreak] = useState<StreakTilstand>(nyStreak);
-  const streakRef = useRef<StreakTilstand>(streak);
   const { registrerSvar } = useProfil();
 
-  // Hold streakRef synkronisert med React-state
-  streakRef.current = streak;
-
-  // Reset når oppgaver-referansen endres (ny runde)
-  useEffect(() => {
-    const fersk = nyStreak();
-    streakRef.current = fersk;
-    setStreak(fersk);
-  }, [oppgaverRef]);
-
-  function anvendEtt(info: SvarInfo): StreakTilstand {
-    registrerSvar(info.nøkkel, info.erRett);
-    if (info.erRett) {
-      const r = etterRett(streakRef.current);
-      leggTilPoeng(info.poengVedRett + r.streakBonus);
-      return r.nyTilstand;
-    }
-    return etterFeil(streakRef.current).nyTilstand;
+  // Reset streak når oppgaver-referansen endres (ny runde) — React 19-mønsteret
+  // for å reagere på prop-endringer uten cascading useEffect-renders.
+  const [sistOppgaverRef, setSistOppgaverRef] = useState<unknown>(oppgaverRef);
+  if (sistOppgaverRef !== oppgaverRef) {
+    setStreak(nyStreak());
+    setSistOppgaverRef(oppgaverRef);
   }
 
   function håndterEtt(info: SvarInfo) {
-    const ny = anvendEtt(info);
-    streakRef.current = ny;
-    setStreak(ny);
+    registrerSvar(info.nøkkel, info.erRett);
+    if (info.erRett) {
+      const r = etterRett(streak);
+      leggTilPoeng(info.poengVedRett + r.streakBonus);
+      setStreak(r.nyTilstand);
+    } else {
+      setStreak(etterFeil(streak).nyTilstand);
+    }
   }
 
   function håndterMange(infoer: SvarInfo[]) {
-    let tilstand = streakRef.current;
+    let tilstand = streak;
     for (const info of infoer) {
-      streakRef.current = tilstand;
-      tilstand = anvendEtt(info);
+      registrerSvar(info.nøkkel, info.erRett);
+      if (info.erRett) {
+        const r = etterRett(tilstand);
+        leggTilPoeng(info.poengVedRett + r.streakBonus);
+        tilstand = r.nyTilstand;
+      } else {
+        tilstand = etterFeil(tilstand).nyTilstand;
+      }
     }
-    streakRef.current = tilstand;
     setStreak(tilstand);
   }
 
   function nullstill() {
-    const fersk = nyStreak();
-    streakRef.current = fersk;
-    setStreak(fersk);
+    setStreak(nyStreak());
   }
 
   return { streak, håndterEtt, håndterMange, nullstill };

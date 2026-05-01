@@ -1,6 +1,6 @@
 import type { Oppgave, Operasjon } from "./typer";
-import type { FaktaStatus, Profil } from "./profil";
-import { plukkVanskeligste, vanskelighetsskår } from "./faktaStatus";
+import type { Profil } from "./profil";
+import { vanskelighetsskår } from "./faktaStatus";
 
 export const ANTALL_DAGLIGE = 5;
 export const DAGLIG_BONUS = 15;
@@ -35,10 +35,16 @@ export function lagDagligUtfordring(profil: Profil): Oppgave[] {
     if (o) fraFakta.push(o);
     if (fraFakta.length >= ANTALL_DAGLIGE) break;
   }
-  // Fyll opp med standard 1-sifret pluss for nye/svake profiler
-  while (fraFakta.length < ANTALL_DAGLIGE) {
+  // Fyll opp med standard 1-sifret pluss for nye/svake profiler — unngå duplikater
+  const sett = new Set(fraFakta.map((o) => `${o.a}+${o.b}`));
+  let safety = 200;
+  while (fraFakta.length < ANTALL_DAGLIGE && safety > 0) {
+    safety--;
     const a = 1 + Math.floor(Math.random() * 9);
     const b = 1 + Math.floor(Math.random() * 9);
+    const nøkkel = `${a}+${b}`;
+    if (sett.has(nøkkel)) continue;
+    sett.add(nøkkel);
     fraFakta.push({ a, b, operasjon: "+", svar: a + b });
   }
   return fraFakta;
