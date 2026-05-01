@@ -281,7 +281,7 @@ function LilyTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
 export default function OppgaverSide() {
   const router = useRouter();
   const { aktivProfil, oppdater, klar } = useProfil();
-  const [aktifTab, setAktifTab] = useState<TabId>("oppgaver");
+  const [aktivTab, setAktifTab] = useState<TabId>("oppgaver");
   const [feiretNivå, setFeiretNivå] = useState<Nivå | null>(null);
   // Holder forrige observerte nivå per profil. Detekterer transisjoner pålitelig
   // selv når flere oppdateringer batches (f.eks. fra "Sjekk alle").
@@ -298,6 +298,8 @@ export default function OppgaverSide() {
   useEffect(() => {
     if (!aktivProfil) {
       forrigeNivåRef.current = null;
+      // Lukk eventuell åpen feiring fra forrige profil ved utlogging
+      setFeiretNivå(null);
       return;
     }
     const nå = nivåForPoeng(aktivProfil.poeng);
@@ -357,12 +359,12 @@ export default function OppgaverSide() {
       </div>
 
       {/* Tabs */}
-      <TabBar aktiv={aktifTab} onChange={setAktifTab} />
+      <TabBar aktiv={aktivTab} onChange={setAktifTab} />
 
       {/* Tab-innhold */}
       <div className="flex flex-col flex-1 bg-white border-2 border-yellow-300 mx-2 mb-2 rounded-b-2xl rounded-tr-2xl overflow-hidden">
-        {aktifTab === "oppgaver" && <OppgaverTab leggTilPoeng={leggTilPoeng} />}
-        {aktifTab === "lily" && <LilyTab leggTilPoeng={leggTilPoeng} />}
+        {aktivTab === "oppgaver" && <OppgaverTab leggTilPoeng={leggTilPoeng} />}
+        {aktivTab === "lily" && <LilyTab leggTilPoeng={leggTilPoeng} />}
       </div>
 
       {feiretNivå && (

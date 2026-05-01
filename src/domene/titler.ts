@@ -27,7 +27,8 @@ export const ANTALL_ETASJER = TITLER.length;
 // ikke hver gang adjektivet bytter. Dette gir mer betydningsfulle milepæler
 // på den visuelle progresjonen.
 export function tårnEtasjeForIndex(nivåIndex: number): number {
-  return Math.floor(nivåIndex / ADJEKTIV.length);
+  const rå = Math.floor(Math.max(0, nivåIndex) / ADJEKTIV.length);
+  return Math.min(rå, ANTALL_ETASJER - 1);
 }
 
 // Fun facts låses opp én per etasje. Etasje 0 er allerede synlig fra start.

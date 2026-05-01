@@ -109,6 +109,14 @@ describe("tårnEtasjeForIndex", () => {
   it("siste etasje matcher siste tittel", () => {
     expect(tårnEtasjeForIndex(ANTALL_NIVÅER - 1)).toBe(ANTALL_ETASJER - 1);
   });
+
+  it("kappes til siste etasje for indekser utover slutten", () => {
+    expect(tårnEtasjeForIndex(ANTALL_NIVÅER + 100)).toBe(ANTALL_ETASJER - 1);
+  });
+
+  it("kappes til 0 for negative indekser", () => {
+    expect(tårnEtasjeForIndex(-5)).toBe(0);
+  });
 });
 
 describe("FUN_FACTS", () => {
