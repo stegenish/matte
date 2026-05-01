@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { profilLager } from "@/src/lagring/profilLager";
+import { profilLager as standardLager } from "@/src/lagring/profilLager";
+import type { ProfilLager } from "@/src/lagring/profilLager";
 import { lagNyProfil, type Profil } from "@/src/domene/profil";
 
 interface ProfilContextVerdi {
@@ -17,48 +18,55 @@ interface ProfilContextVerdi {
 
 const Ctx = createContext<ProfilContextVerdi | undefined>(undefined);
 
-export function ProfilProvider({ children }: { children: ReactNode }) {
+interface Props {
+  children: ReactNode;
+  // Lager kan injiseres for testing eller for å bytte til API-backend senere.
+  // Default = localStorage-basert lager.
+  lager?: ProfilLager;
+}
+
+export function ProfilProvider({ children, lager = standardLager }: Props) {
   const [klar, setKlar] = useState(false);
   const [alleProfiler, setAlleProfiler] = useState<Profil[]>([]);
   const [aktivId, setAktivId] = useState<string | null>(null);
 
   useEffect(() => {
-    setAlleProfiler(profilLager.hentAlle());
-    setAktivId(profilLager.hentAktivId());
+    setAlleProfiler(lager.hentAlle());
+    setAktivId(lager.hentAktivId());
     setKlar(true);
-  }, []);
+  }, [lager]);
 
   const aktivProfil =
     aktivId === null ? null : alleProfiler.find((p) => p.id === aktivId) ?? null;
 
   function velg(id: string) {
-    profilLager.settAktivId(id);
+    lager.settAktivId(id);
     setAktivId(id);
   }
 
   function opprett(navn: string, avatar: string): Profil {
     const ny = lagNyProfil(navn, avatar);
-    profilLager.lagre(ny);
-    profilLager.settAktivId(ny.id);
+    lager.lagre(ny);
+    lager.settAktivId(ny.id);
     setAlleProfiler((prev) => [...prev, ny]);
     setAktivId(ny.id);
     return ny;
   }
 
   function loggUt() {
-    profilLager.settAktivId(null);
+    lager.settAktivId(null);
     setAktivId(null);
   }
 
   function oppdater(oppdatert: Profil) {
-    profilLager.lagre(oppdatert);
+    lager.lagre(oppdatert);
     setAlleProfiler((prev) =>
       prev.map((p) => (p.id === oppdatert.id ? oppdatert : p)),
     );
   }
 
   function slett(id: string) {
-    profilLager.slett(id);
+    lager.slett(id);
     setAlleProfiler((prev) => prev.filter((p) => p.id !== id));
     if (aktivId === id) setAktivId(null);
   }

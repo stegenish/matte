@@ -63,11 +63,37 @@ export function lagNyProfil(navn: string, avatar: string): Profil {
   };
 }
 
-// Defensiv lasting: fyll inn manglende felter med defaults.
+// Migrasjons-register: hver oppføring tar data på versjon N og returnerer data på versjon N+1.
+// Når PROFIL_SCHEMA_VERSJON bumpes, legg til migrasjon for forrige versjon her.
+//
+// Eksempel ved fremtidig versjon 2:
+//   1: (data) => ({ ...data, schemaVersjon: 2, nyttFelt: defaultverdi }),
+const MIGRASJONER: Record<number, (data: Record<string, unknown>) => Record<string, unknown>> = {};
+
+// Kjører nødvendige migrasjoner inntil dataen matcher gjeldende skjemaversjon.
+// Returnerer rådataen uendret hvis ingen migrasjon er nødvendig (eller mulig).
+export function migrerProfilData(rådata: unknown): unknown {
+  if (!rådata || typeof rådata !== "object") return rådata;
+  let data = { ...(rådata as Record<string, unknown>) };
+  // Hvis schemaVersjon mangler, anta versjon 1 (vi startet på 1)
+  if (typeof data.schemaVersjon !== "number") data.schemaVersjon = 1;
+  while (
+    typeof data.schemaVersjon === "number" &&
+    data.schemaVersjon < PROFIL_SCHEMA_VERSJON
+  ) {
+    const migrasjon = MIGRASJONER[data.schemaVersjon];
+    if (!migrasjon) break; // Ingen migrasjon registrert — la fyllInnDefaults håndtere
+    data = migrasjon(data);
+  }
+  return data;
+}
+
+// Defensiv lasting: kjør migrasjoner og fyll inn manglende felter med defaults.
 // Brukes både ved lasting fra localStorage og ved fremtidig schema-migrering.
 export function fyllInnDefaults(rådata: unknown): Profil | null {
-  if (!rådata || typeof rådata !== "object") return null;
-  const r = rådata as Partial<Profil> & Record<string, unknown>;
+  const migrert = migrerProfilData(rådata);
+  if (!migrert || typeof migrert !== "object") return null;
+  const r = migrert as Partial<Profil> & Record<string, unknown>;
   if (typeof r.id !== "string" || typeof r.navn !== "string") return null;
 
   const standardStatistikk: ProfilStatistikk = {

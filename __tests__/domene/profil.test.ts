@@ -1,6 +1,7 @@
 import {
   fyllInnDefaults,
   lagNyProfil,
+  migrerProfilData,
   PROFIL_SCHEMA_VERSJON,
   STANDARD_AVATARER,
 } from "@/src/domene/profil";
@@ -76,5 +77,26 @@ describe("fyllInnDefaults", () => {
     expect(p?.statistikk.totaltRiktige).toBe(10);
     expect(p?.statistikk.totaltFeil).toBe(0);
     expect(p?.statistikk.høyesteStreak).toBe(0);
+  });
+});
+
+describe("migrerProfilData", () => {
+  it("returnerer dataen uendret når schemaVersjon matcher gjeldende", () => {
+    const data = { id: "x", navn: "Lily", schemaVersjon: PROFIL_SCHEMA_VERSJON };
+    const migrert = migrerProfilData(data);
+    expect((migrert as { schemaVersjon: number }).schemaVersjon).toBe(PROFIL_SCHEMA_VERSJON);
+  });
+
+  it("antar versjon 1 når schemaVersjon mangler", () => {
+    const data = { id: "x", navn: "Lily" };
+    const migrert = migrerProfilData(data) as { schemaVersjon: number };
+    // Med PROFIL_SCHEMA_VERSJON = 1 og ingen migrasjoner registrert ender vi opp på versjon 1
+    expect(migrert.schemaVersjon).toBe(1);
+  });
+
+  it("returnerer ikke-objekter uendret", () => {
+    expect(migrerProfilData(null)).toBeNull();
+    expect(migrerProfilData("foo")).toBe("foo");
+    expect(migrerProfilData(undefined)).toBeUndefined();
   });
 });
