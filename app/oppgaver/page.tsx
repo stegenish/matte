@@ -244,8 +244,7 @@ export default function OppgaverSide() {
   const router = useRouter();
   const { aktivProfil, oppdater, klar } = useProfil();
   function toggleLyd() {
-    if (!aktivProfil) return;
-    oppdater({ ...aktivProfil, lydAv: !aktivProfil.lydAv });
+    oppdater((p) => ({ ...p, lydAv: !p.lydAv }));
   }
   const [aktivTab, setAktivTab] = useState<TabId>("oppgaver");
   const [feiretNivå, setFeiretNivå] = useState<Nivå | null>(null);
@@ -299,15 +298,15 @@ export default function OppgaverSide() {
   }
 
   function leggTilPoeng(p: number) {
-    if (!aktivProfil) return;
-    const nyttPoeng = aktivProfil.poeng + p;
-    const nyttNivå = nivåForPoeng(nyttPoeng);
-    const nyEtasje = tårnEtasjeForIndex(nyttNivå.index);
-    oppdater({
-      ...aktivProfil,
-      poeng: nyttPoeng,
-      tittelIndex: nyttNivå.index,
-      tårnEtasje: nyEtasje,
+    oppdater((forrige) => {
+      const nyttPoeng = forrige.poeng + p;
+      const nyttNivå = nivåForPoeng(nyttPoeng);
+      return {
+        ...forrige,
+        poeng: nyttPoeng,
+        tittelIndex: nyttNivå.index,
+        tårnEtasje: tårnEtasjeForIndex(nyttNivå.index),
+      };
     });
   }
 

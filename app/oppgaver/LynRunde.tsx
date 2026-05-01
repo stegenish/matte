@@ -57,14 +57,18 @@ export function LynRunde({ tabeller, onAvslutt, leggTilPoeng }: Props) {
     inputRef.current?.focus();
   }, [oppgave]);
 
-  // Når lyn-runden er ferdig: oppdater rekord + gi bonus hvis ny rekord
+  // Når lyn-runden er ferdig: oppdater rekord + gi bonus atomisk
+  // (én funksjonell oppdater så rekord-feltet ikke overskrives av poeng-oppdatering)
   useEffect(() => {
-    if (!ferdig || !aktivProfil) return;
-    if (riktige > aktivProfil.lynRekord) {
-      oppdater({ ...aktivProfil, lynRekord: riktige });
-      leggTilPoeng(REKORD_BONUS);
-    }
-    // Disable lint: kun trigge én gang ved ferdig
+    if (!ferdig) return;
+    oppdater((forrige) => {
+      if (riktige <= forrige.lynRekord) return forrige; // ingen ny rekord
+      return {
+        ...forrige,
+        lynRekord: riktige,
+        poeng: forrige.poeng + REKORD_BONUS,
+      };
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ferdig]);
 

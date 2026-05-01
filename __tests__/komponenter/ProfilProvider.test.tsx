@@ -80,7 +80,7 @@ describe("ProfilProvider", () => {
     expect(screen.getByTestId("antall")).toHaveTextContent("1");
   });
 
-  it("oppdater erstatter profilen", () => {
+  it("oppdater anvender funksjonen på aktiv profil", () => {
     const lager = lagFakeLager();
     let ctx: ReturnType<typeof useProfil> | undefined;
     render(
@@ -88,14 +88,60 @@ describe("ProfilProvider", () => {
         <TestForbruker onMount={(c) => (ctx = c)} />
       </ProfilProvider>,
     );
-    let opprettet!: ReturnType<typeof useProfil>["opprett"] extends (...a: any) => infer R ? R : never;
+    let opprettet!: ReturnType<typeof useProfil>["opprett"] extends (...a: never) => infer R ? R : never;
     act(() => {
       opprettet = ctx!.opprett("Lily", "🦊");
     });
     act(() => {
-      ctx!.oppdater({ ...opprettet, poeng: 42 });
+      ctx!.oppdater((p) => ({ ...p, poeng: 42 }));
     });
     expect(lager.hent(opprettet.id)?.poeng).toBe(42);
+  });
+
+  it("flere synkron oppdater-kall akkumulerer (ikke stale closure)", () => {
+    const lager = lagFakeLager();
+    let ctx: ReturnType<typeof useProfil> | undefined;
+    render(
+      <ProfilProvider lager={lager}>
+        <TestForbruker onMount={(c) => (ctx = c)} />
+      </ProfilProvider>,
+    );
+    let id = "";
+    act(() => {
+      id = ctx!.opprett("Lily", "🦊").id;
+    });
+    // Fem synkrone oppdater-kall som hver legger til 1 poeng. Med funksjonell
+    // oppdater skal alle 5 telle. Stale-closure-bug ville gitt 1 poeng totalt.
+    act(() => {
+      for (let i = 0; i < 5; i++) {
+        ctx!.oppdater((p) => ({ ...p, poeng: p.poeng + 1 }));
+      }
+    });
+    expect(lager.hent(id)?.poeng).toBe(5);
+  });
+
+  it("registrerSvar akkumulerer ved batch-kall (ikke stale closure)", () => {
+    const lager = lagFakeLager();
+    let ctx: ReturnType<typeof useProfil> | undefined;
+    render(
+      <ProfilProvider lager={lager}>
+        <TestForbruker onMount={(c) => (ctx = c)} />
+      </ProfilProvider>,
+    );
+    let id = "";
+    act(() => {
+      id = ctx!.opprett("Lily", "🦊").id;
+    });
+    // 5 synkrone svar — alle skal registreres. Tidligere ville stale closure
+    // gitt totaltRiktige=1 og kun siste faktaStatus-oppdatering.
+    act(() => {
+      for (let i = 0; i < 5; i++) {
+        ctx!.registrerSvar(`fakta-${i}`, true);
+      }
+    });
+    const lagret = lager.hent(id);
+    expect(lagret?.statistikk.totaltRiktige).toBe(5);
+    expect(lagret?.faktaStatus).toHaveLength(5);
   });
 
   it("slett fjerner profilen og nullstiller aktivId hvis den var aktiv", () => {

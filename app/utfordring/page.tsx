@@ -11,7 +11,7 @@ import {
   lagDagligUtfordring,
   markerGjortIDag,
 } from "@/src/domene/dagligUtfordring";
-import { FUN_FACTS } from "@/src/domene/titler";
+import { FUN_FACTS, nivåForPoeng, tårnEtasjeForIndex } from "@/src/domene/titler";
 
 export default function UtfordringSide() {
   const router = useRouter();
@@ -41,25 +41,45 @@ export default function UtfordringSide() {
   const allereGjort = harGjortIDag(aktivProfil);
 
   function leggTilPoeng(p: number) {
-    if (!aktivProfil) return;
-    oppdater({ ...aktivProfil, poeng: aktivProfil.poeng + p });
+    oppdater((forrige) => {
+      const nyttPoeng = forrige.poeng + p;
+      const nyttNivå = nivåForPoeng(nyttPoeng);
+      return {
+        ...forrige,
+        poeng: nyttPoeng,
+        tittelIndex: nyttNivå.index,
+        tårnEtasje: tårnEtasjeForIndex(nyttNivå.index),
+      };
+    });
   }
 
   function avslutt() {
-    if (!aktivProfil || bonusGitt) return;
+    if (bonusGitt) return;
     setBonusGitt(true);
-    // Lås opp neste fun fact (hvis tilgjengelig)
-    const nesteFakta = FUN_FACTS[aktivProfil.funFactsSamlet.length];
-    let oppdatert = markerGjortIDag(aktivProfil);
-    oppdatert = { ...oppdatert, poeng: oppdatert.poeng + DAGLIG_BONUS };
-    if (nesteFakta && !aktivProfil.funFactsSamlet.includes(nesteFakta)) {
-      oppdatert = {
-        ...oppdatert,
-        funFactsSamlet: [...oppdatert.funFactsSamlet, nesteFakta],
+    // Beregn ny fun fact basert på dagens profil-snapshot for UI-feedback
+    const nesteFakta = aktivProfil
+      ? FUN_FACTS[aktivProfil.funFactsSamlet.length]
+      : null;
+    if (nesteFakta) setNyFunFact(nesteFakta);
+    oppdater((forrige) => {
+      let etter = markerGjortIDag(forrige);
+      const nyttPoeng = etter.poeng + DAGLIG_BONUS;
+      const nyttNivå = nivåForPoeng(nyttPoeng);
+      etter = {
+        ...etter,
+        poeng: nyttPoeng,
+        tittelIndex: nyttNivå.index,
+        tårnEtasje: tårnEtasjeForIndex(nyttNivå.index),
       };
-      setNyFunFact(nesteFakta);
-    }
-    oppdater(oppdatert);
+      const nyFakta = FUN_FACTS[forrige.funFactsSamlet.length];
+      if (nyFakta && !forrige.funFactsSamlet.includes(nyFakta)) {
+        etter = {
+          ...etter,
+          funFactsSamlet: [...etter.funFactsSamlet, nyFakta],
+        };
+      }
+      return etter;
+    });
   }
 
   return (
