@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import OppgaveListe from "./OppgaveListe";
 import { PakkerTab } from "./PakkerTab";
+import { TallTab } from "./TallTab";
 import type { Oppgave, Operasjon } from "@/src/domene/typer";
 import { lagOppgaver, type Innstillinger } from "@/src/domene/oppgaver";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
@@ -15,7 +16,7 @@ import { nivåForPoeng, tårnEtasjeForIndex, type Nivå } from "@/src/domene/tit
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
-type TabId = "oppgaver" | "pakker";
+type TabId = "oppgaver" | "pakker" | "tall";
 
 const SIFFER_VALG = [1, 2, 3];
 const ANTALL_VALG = [5, 10, 15, 20];
@@ -24,6 +25,7 @@ const ALLE_OPERASJONER: Operasjon[] = ["+", "-", "×", "÷"];
 const TABS: { id: TabId; label: string }[] = [
   { id: "oppgaver", label: "Oppgaver" },
   { id: "pakker", label: "Pakker" },
+  { id: "tall", label: "Tall" },
 ];
 
 // ── TabBar ────────────────────────────────────────────────────────────────────
@@ -318,6 +320,7 @@ export default function OppgaverSide() {
       <div className="flex flex-col flex-1 bg-white border-2 border-yellow-300 mx-2 mb-2 rounded-b-2xl rounded-tr-2xl overflow-hidden">
         {aktivTab === "oppgaver" && <OppgaverTab leggTilPoeng={leggTilPoeng} />}
         {aktivTab === "pakker" && <PakkerTab leggTilPoeng={leggTilPoeng} />}
+        {aktivTab === "tall" && <TallTab leggTilPoeng={leggTilPoeng} />}
       </div>
 
       {feiretNivå && (
