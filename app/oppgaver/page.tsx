@@ -14,8 +14,11 @@ import { Tittelvisning } from "@/src/komponenter/Tittelvisning";
 import { Tittelfeiring } from "@/src/komponenter/Tittelfeiring";
 import { Maskot } from "@/src/komponenter/Maskot";
 import { BossKamp } from "@/src/komponenter/BossKamp";
+import { Sesjonspause } from "@/src/komponenter/Sesjonspause";
 import { nivåForPoeng, tårnEtasjeForIndex, type Nivå } from "@/src/domene/titler";
 import { spillOpprykk } from "@/src/lyd";
+
+const SESJONSLENGDE_MS = 5 * 60 * 1000; // 5 min
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
@@ -247,6 +250,8 @@ export default function OppgaverSide() {
   const [aktivTab, setAktivTab] = useState<TabId>("oppgaver");
   const [feiretNivå, setFeiretNivå] = useState<Nivå | null>(null);
   const [bossKamp, setBossKamp] = useState(false);
+  const [visPause, setVisPause] = useState(false);
+  const [pauseVist, setPauseVist] = useState(false);
   // Holder forrige observerte nivå per profil. Detekterer transisjoner pålitelig
   // selv når flere oppdateringer batches (f.eks. fra "Sjekk alle").
   const forrigeNivåRef = useRef<{ profilId: string; index: number } | null>(null);
@@ -255,6 +260,16 @@ export default function OppgaverSide() {
   useEffect(() => {
     if (klar && !aktivProfil) router.replace("/");
   }, [klar, aktivProfil, router]);
+
+  // Sesjonspause etter ~5 min — bare én gang per side-besøk
+  useEffect(() => {
+    if (pauseVist) return;
+    const id = setTimeout(() => {
+      setVisPause(true);
+      setPauseVist(true);
+    }, SESJONSLENGDE_MS);
+    return () => clearTimeout(id);
+  }, [pauseVist]);
 
   // Detekter nivåopprykk på den faktisk rendrede tilstanden.
   // Effekten ser på den endelige tilstanden etter eventuell batching, så
@@ -357,6 +372,12 @@ export default function OppgaverSide() {
         <BossKamp
           onLukk={() => setBossKamp(false)}
           leggTilPoeng={leggTilPoeng}
+        />
+      )}
+      {visPause && (
+        <Sesjonspause
+          onFortsett={() => setVisPause(false)}
+          onAvslutt={() => router.push("/")}
         />
       )}
     </main>
