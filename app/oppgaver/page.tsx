@@ -9,6 +9,7 @@ import { lagOppgaver, type Innstillinger } from "@/src/domene/oppgaver";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
 import { Tittelvisning } from "@/src/komponenter/Tittelvisning";
 import { Tittelfeiring } from "@/src/komponenter/Tittelfeiring";
+import { Maskot } from "@/src/komponenter/Maskot";
 import { nivåForPoeng, tårnEtasjeForIndex, type Nivå } from "@/src/domene/titler";
 
 // ── Typer ────────────────────────────────────────────────────────────────────
@@ -350,7 +351,10 @@ export default function OppgaverSide() {
         </span>
       </div>
 
-      <Tittelvisning profil={aktivProfil} />
+      <div className="flex items-center justify-center gap-6 px-6 pb-2 flex-wrap">
+        <Tittelvisning profil={aktivProfil} />
+        <Maskot avatar={aktivProfil.avatar} />
+      </div>
 
       {/* Tabs */}
       <TabBar aktiv={aktifTab} onChange={setAktifTab} />

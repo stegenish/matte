@@ -3,6 +3,13 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { Oppgave } from "@/src/domene/typer";
 import { poengForOppgave } from "@/src/domene/poeng";
+import {
+  etterFeil,
+  etterRett,
+  nyStreak,
+  STREAK_GRENSE,
+  type StreakTilstand,
+} from "@/src/domene/streak";
 
 // ── OppgaveListe ──────────────────────────────────────────────────────────────
 
@@ -19,10 +26,11 @@ interface Props {
 
 const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe(
   { oppgaver, leggTilPoeng, onNyRunde, onEnterAt },
-  ref
+  ref,
 ) {
   const [svar, setSvar] = useState<string[]>(() => Array(oppgaver.length).fill(""));
   const [sjekket, setSjekket] = useState<boolean[]>(() => Array(oppgaver.length).fill(false));
+  const [streak, setStreak] = useState<StreakTilstand>(nyStreak);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useImperativeHandle(ref, () => ({
@@ -33,6 +41,7 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
   useEffect(() => {
     setSvar(Array(oppgaver.length).fill(""));
     setSjekket(Array(oppgaver.length).fill(false));
+    setStreak(nyStreak());
   }, [oppgaver]);
 
   function sjekkEtt(i: number) {
@@ -43,18 +52,30 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
       return neste;
     });
     if (Number(svar[i]) === oppgaver[i].svar) {
-      leggTilPoeng(poengForOppgave(oppgaver[i]));
+      const r = etterRett(streak);
+      setStreak(r.nyTilstand);
+      leggTilPoeng(poengForOppgave(oppgaver[i]) + r.streakBonus);
+    } else {
+      setStreak(etterFeil(streak).nyTilstand);
     }
   }
 
   function sjekkAlle() {
     const nySjekket = oppgaver.map((_, i) => svar[i] !== "");
     setSjekket(nySjekket);
+    // Spor streak-tilstand lokalt gjennom løkken så vi ikke leser stale state
+    let lokalStreak = streak;
     oppgaver.forEach((o, i) => {
-      if (!sjekket[i] && nySjekket[i] && Number(svar[i]) === o.svar) {
-        leggTilPoeng(poengForOppgave(o));
+      if (sjekket[i] || !nySjekket[i]) return;
+      if (Number(svar[i]) === o.svar) {
+        const r = etterRett(lokalStreak);
+        lokalStreak = r.nyTilstand;
+        leggTilPoeng(poengForOppgave(o) + r.streakBonus);
+      } else {
+        lokalStreak = etterFeil(lokalStreak).nyTilstand;
       }
     });
+    setStreak(lokalStreak);
   }
 
   const alleSjekket =
@@ -62,11 +83,13 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
     sjekket.length === oppgaver.length &&
     sjekket.every(Boolean);
   const antallRiktige = oppgaver.filter(
-    (o, i) => sjekket[i] && Number(svar[i]) === o.svar
+    (o, i) => sjekket[i] && Number(svar[i]) === o.svar,
   ).length;
 
   return (
     <div className="flex flex-col gap-4 max-w-xl">
+      <Streakvisning streak={streak} />
+
       {alleSjekket && (
         <p className="text-2xl font-black text-center text-green-700 mb-2">
           {antallRiktige} / {oppgaver.length} riktige!{" "}
@@ -156,5 +179,26 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
     </div>
   );
 });
+
+function Streakvisning({ streak }: { streak: StreakTilstand }) {
+  if (streak.riktigPåRad === 0) return null;
+  const erEkteStreak = streak.riktigPåRad >= STREAK_GRENSE;
+  return (
+    <div className="flex items-center justify-center gap-3 py-1">
+      <span className={`text-xl font-black ${erEkteStreak ? "text-orange-500" : "text-gray-500"}`}>
+        {erEkteStreak ? "🔥" : "✨"} ×{streak.riktigPåRad}
+      </span>
+      {erEkteStreak && streak.skjoldIntakt && (
+        <span
+          className="text-xl"
+          title="Skjoldet beskytter streaken din mot første feil"
+          aria-label="Skjold aktivt"
+        >
+          🛡
+        </span>
+      )}
+    </div>
+  );
+}
 
 export default OppgaveListe;
