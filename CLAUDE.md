@@ -5,6 +5,9 @@ En matteapp for barn (Lineus, Lily og Kian) med et lekent design.
 Startsiden ønsker barna velkommen og har en startknapp til oppgavesiden.
 Oppgavesiden lar brukeren justere vanskelighetsgrad og generere matteoppgaver.
 
+## Kodebase-oversikt
+Les `README.agent` for en fullstendig orientering om arkitektur, komponenter, typer, logikk og kjente bugs — uten å måtte lese all kildekode.
+
 ## Tech stack
 - Next.js (App Router) with React
 - pnpm for package management
@@ -22,6 +25,7 @@ The app must work in desktop and mobile browsers.
 - Prefer good variable and function/component names over comments. Use comments to explain concepts.
 
 ## Review process (after implementing 1–5 passing tests for a coherent concept)
+Let a subagent with a fresh context run the review.
 
 ### Phase 1: Look for errors and potential problems
 Review the code for bugs. Follow the testing guidelines above.
@@ -31,6 +35,9 @@ This should not change behavior — run tests to verify.
 - Factor out code duplication.
 - Improve naming of concepts.
 - Break up code into more manageable pieces.
+
+### Phase 3: Future proofing
+A common experience with vibed code is that it might look nice and be understandable, but that it somehow resist changing in the future. Look for signs of this and improve the code if not found by the previous phases
 
 # Commit after implementing a prompt
 - The commit message should start with a short summary of what has been done
