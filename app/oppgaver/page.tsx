@@ -7,6 +7,9 @@ import OppgaveListe, { type OppgaveListeHandle } from "./OppgaveListe";
 import type { Oppgave, Operasjon } from "@/src/domene/typer";
 import { lagOppgaver, type Innstillinger } from "@/src/domene/oppgaver";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
+import { Tittelvisning } from "@/src/komponenter/Tittelvisning";
+import { Tittelfeiring } from "@/src/komponenter/Tittelfeiring";
+import { nivåForPoeng, type Nivå } from "@/src/domene/titler";
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
@@ -20,17 +23,6 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "oppgaver", label: "Oppgaver" },
   { id: "lily", label: "Lily" },
 ];
-
-// ── Poengvisning ──────────────────────────────────────────────────────────────
-
-function Poengvisning({ poeng }: { poeng: number }) {
-  return (
-    <div className="flex items-center justify-center gap-2 px-6 pt-4">
-      <span className="text-2xl font-black text-yellow-500">⭐</span>
-      <span className="text-2xl font-black text-gray-700">{poeng} poeng</span>
-    </div>
-  );
-}
 
 // ── TabBar ────────────────────────────────────────────────────────────────────
 
@@ -289,11 +281,31 @@ export default function OppgaverSide() {
   const router = useRouter();
   const { aktivProfil, oppdater, klar } = useProfil();
   const [aktifTab, setAktifTab] = useState<TabId>("oppgaver");
+  const [feiretNivå, setFeiretNivå] = useState<Nivå | null>(null);
+  // Holder forrige observerte nivå per profil. Detekterer transisjoner pålitelig
+  // selv når flere oppdateringer batches (f.eks. fra "Sjekk alle").
+  const forrigeNivåRef = useRef<{ profilId: string; index: number } | null>(null);
 
   // Send tilbake til startside hvis ingen profil er valgt
   useEffect(() => {
     if (klar && !aktivProfil) router.replace("/");
   }, [klar, aktivProfil, router]);
+
+  // Detekter nivåopprykk på den faktisk rendrede tilstanden.
+  // Effekten ser på den endelige tilstanden etter eventuell batching, så
+  // "Sjekk alle" som krysser flere nivåer på én gang feirer det høyeste nådde nivået.
+  useEffect(() => {
+    if (!aktivProfil) {
+      forrigeNivåRef.current = null;
+      return;
+    }
+    const nå = nivåForPoeng(aktivProfil.poeng);
+    const forrige = forrigeNivåRef.current;
+    if (forrige && forrige.profilId === aktivProfil.id && nå.index > forrige.index) {
+      setFeiretNivå(nå);
+    }
+    forrigeNivåRef.current = { profilId: aktivProfil.id, index: nå.index };
+  }, [aktivProfil?.id, aktivProfil?.poeng]);
 
   if (!klar || !aktivProfil) {
     return (
@@ -305,7 +317,9 @@ export default function OppgaverSide() {
 
   function leggTilPoeng(p: number) {
     if (!aktivProfil) return;
-    oppdater({ ...aktivProfil, poeng: aktivProfil.poeng + p });
+    const nyttPoeng = aktivProfil.poeng + p;
+    const nyttNivå = nivåForPoeng(nyttPoeng);
+    oppdater({ ...aktivProfil, poeng: nyttPoeng, tittelIndex: nyttNivå.index });
   }
 
   return (
@@ -330,7 +344,7 @@ export default function OppgaverSide() {
         </span>
       </div>
 
-      <Poengvisning poeng={aktivProfil.poeng} />
+      <Tittelvisning profil={aktivProfil} />
 
       {/* Tabs */}
       <TabBar aktiv={aktifTab} onChange={setAktifTab} />
@@ -340,6 +354,10 @@ export default function OppgaverSide() {
         {aktifTab === "oppgaver" && <OppgaverTab leggTilPoeng={leggTilPoeng} />}
         {aktifTab === "lily" && <LilyTab leggTilPoeng={leggTilPoeng} />}
       </div>
+
+      {feiretNivå && (
+        <Tittelfeiring nivå={feiretNivå} onLukk={() => setFeiretNivå(null)} />
+      )}
     </main>
   );
 }
