@@ -7,11 +7,11 @@ import {
   etterFeil,
   etterRett,
   nyStreak,
-  STREAK_GRENSE,
   type StreakTilstand,
 } from "@/src/domene/streak";
-
-// ── OppgaveListe ──────────────────────────────────────────────────────────────
+import { oppdaterIndex } from "@/src/domene/arrayhjelper";
+import { Streakvisning } from "@/src/komponenter/Streakvisning";
+import { OppgaveRad } from "./OppgaveRad";
 
 export interface OppgaveListeHandle {
   focusInput: (i: number) => void;
@@ -37,7 +37,7 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
     focusInput: (i: number) => inputRefs.current[i]?.focus(),
   }));
 
-  // Reset state når parent sender nye oppgaver
+  // Reset state når parent sender nye oppgaver (ny runde)
   useEffect(() => {
     setSvar(Array(oppgaver.length).fill(""));
     setSjekket(Array(oppgaver.length).fill(false));
@@ -46,11 +46,7 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
 
   function sjekkEtt(i: number) {
     if (svar[i] === "" || sjekket[i]) return;
-    setSjekket((prev) => {
-      const neste = [...prev];
-      neste[i] = true;
-      return neste;
-    });
+    setSjekket((prev) => oppdaterIndex(prev, i, true));
     if (Number(svar[i]) === oppgaver[i].svar) {
       const r = etterRett(streak);
       setStreak(r.nyTilstand);
@@ -78,6 +74,17 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
     setStreak(lokalStreak);
   }
 
+  function prøvIgjen(i: number) {
+    setSvar((prev) => oppdaterIndex(prev, i, ""));
+    setSjekket((prev) => oppdaterIndex(prev, i, false));
+  }
+
+  function håndterEnter(i: number) {
+    sjekkEtt(i);
+    if (onEnterAt) onEnterAt(i);
+    else inputRefs.current[i + 1]?.focus();
+  }
+
   const alleSjekket =
     oppgaver.length > 0 &&
     sjekket.length === oppgaver.length &&
@@ -97,68 +104,23 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
         </p>
       )}
 
-      {oppgaver.map((o, i) => {
-        const riktig = sjekket[i] ? Number(svar[i]) === o.svar : null;
-        return (
-          <div
-            key={i}
-            className={`flex items-center gap-3 p-3 rounded-2xl border-2 ${
-              riktig === true
-                ? "border-green-400 bg-green-50"
-                : riktig === false
-                ? "border-red-300 bg-red-50"
-                : "border-yellow-200 bg-white"
-            }`}
-          >
-            <span className="text-xl font-bold text-gray-400 w-7 text-right shrink-0">
-              {i + 1}.
-            </span>
-            <span className="text-2xl font-bold text-purple-500">{o.a}</span>
-            <span className="text-2xl font-bold text-gray-500">{o.operasjon}</span>
-            <span className="text-2xl font-bold text-green-500">{o.b}</span>
-            <span className="text-2xl font-bold text-gray-500">=</span>
-            <input
-              type="number"
-              value={svar[i]}
-              onChange={(e) => {
-                const nyttSvar = [...svar];
-                nyttSvar[i] = e.target.value;
-                setSvar(nyttSvar);
-              }}
-              ref={(el) => {
-                inputRefs.current[i] = el;
-              }}
-              onBlur={() => sjekkEtt(i)}
-              onKeyDown={(e) => {
-                if (e.key !== "Enter") return;
-                sjekkEtt(i);
-                if (onEnterAt) onEnterAt(i);
-                else inputRefs.current[i + 1]?.focus();
-              }}
-              disabled={riktig === true}
-              onClick={() => {
-                if (riktig === false) {
-                  setSvar((prev) => { const n = [...prev]; n[i] = ""; return n; });
-                  setSjekket((prev) => { const n = [...prev]; n[i] = false; return n; });
-                }
-              }}
-              autoFocus={i === 0}
-              className={`w-24 text-center text-2xl font-bold border-2 rounded-xl py-1 focus:outline-none ${
-                riktig === true
-                  ? "border-green-400 bg-green-50"
-                  : riktig === false
-                  ? "border-red-400 bg-red-50"
-                  : "border-blue-300 focus:border-blue-500 bg-white"
-              }`}
-              placeholder="?"
-            />
-            {riktig === true && <span className="text-2xl shrink-0">✅</span>}
-            {riktig === false && (
-              <span className="text-2xl shrink-0">❌</span>
-            )}
-          </div>
-        );
-      })}
+      {oppgaver.map((o, i) => (
+        <OppgaveRad
+          key={i}
+          index={i}
+          oppgave={o}
+          svar={svar[i]}
+          riktig={sjekket[i] ? Number(svar[i]) === o.svar : null}
+          inputRef={(el) => {
+            inputRefs.current[i] = el;
+          }}
+          autoFocus={i === 0}
+          onSvarEndret={(verdi) => setSvar((prev) => oppdaterIndex(prev, i, verdi))}
+          onBlur={() => sjekkEtt(i)}
+          onEnter={() => håndterEnter(i)}
+          onPrøvIgjen={() => prøvIgjen(i)}
+        />
+      ))}
 
       {!alleSjekket && (
         <button
@@ -179,26 +141,5 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
     </div>
   );
 });
-
-function Streakvisning({ streak }: { streak: StreakTilstand }) {
-  if (streak.riktigPåRad === 0) return null;
-  const erEkteStreak = streak.riktigPåRad >= STREAK_GRENSE;
-  return (
-    <div className="flex items-center justify-center gap-3 py-1">
-      <span className={`text-xl font-black ${erEkteStreak ? "text-orange-500" : "text-gray-500"}`}>
-        {erEkteStreak ? "🔥" : "✨"} ×{streak.riktigPåRad}
-      </span>
-      {erEkteStreak && streak.skjoldIntakt && (
-        <span
-          className="text-xl"
-          title="Skjoldet beskytter streaken din mot første feil"
-          aria-label="Skjold aktivt"
-        >
-          🛡
-        </span>
-      )}
-    </div>
-  );
-}
 
 export default OppgaveListe;
