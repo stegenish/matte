@@ -8,15 +8,9 @@ import {
   type TallPakke,
 } from "@/src/domene/tallpakker";
 import { tallTilNavn } from "@/src/domene/tallNavn";
-import {
-  etterFeil,
-  etterRett,
-  nyStreak,
-  type StreakTilstand,
-} from "@/src/domene/streak";
 import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
-import { useProfil } from "@/src/komponenter/ProfilProvider";
+import { useSvarOrkestrering } from "@/src/komponenter/useSvarOrkestrering";
 
 interface Props {
   leggTilPoeng: (p: number) => void;
@@ -93,26 +87,21 @@ function TallOppgaveListe({
   const [sjekket, setSjekket] = useState<boolean[]>(() =>
     Array(oppgaver.length).fill(false),
   );
-  const [streak, setStreak] = useState<StreakTilstand>(nyStreak);
-  const { registrerSvar } = useProfil();
+  const { streak, håndterEtt } = useSvarOrkestrering(leggTilPoeng, oppgaver);
 
   useEffect(() => {
     setValgt(Array(oppgaver.length).fill(null));
     setSvarTekst(Array(oppgaver.length).fill(""));
     setSjekket(Array(oppgaver.length).fill(false));
-    setStreak(nyStreak());
   }, [oppgaver]);
 
   function håndterSvar(i: number, erRett: boolean) {
     setSjekket((prev) => oppdaterIndex(prev, i, true));
-    registrerSvar(`tall:${oppgaver[i].tall}`, erRett);
-    if (erRett) {
-      const r = etterRett(streak);
-      setStreak(r.nyTilstand);
-      leggTilPoeng(POENG_PER_TALL_OPPGAVE + r.streakBonus);
-    } else {
-      setStreak(etterFeil(streak).nyTilstand);
-    }
+    håndterEtt({
+      erRett,
+      nøkkel: `tall:${oppgaver[i].tall}`,
+      poengVedRett: POENG_PER_TALL_OPPGAVE,
+    });
   }
 
   function velgAlternativ(i: number, tall: number) {

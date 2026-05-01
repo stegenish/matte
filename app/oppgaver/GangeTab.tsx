@@ -10,15 +10,9 @@ import {
   type GangeVariant,
   type GangetabellInnstillinger,
 } from "@/src/domene/gangevariant";
-import {
-  etterFeil,
-  etterRett,
-  nyStreak,
-  type StreakTilstand,
-} from "@/src/domene/streak";
 import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
-import { useProfil } from "@/src/komponenter/ProfilProvider";
+import { useSvarOrkestrering } from "@/src/komponenter/useSvarOrkestrering";
 import { LynRunde } from "./LynRunde";
 
 interface Props {
@@ -202,28 +196,23 @@ function GangeOppgaveListe({
   const [sjekket, setSjekket] = useState<boolean[]>(() =>
     Array(oppgaver.length).fill(false),
   );
-  const [streak, setStreak] = useState<StreakTilstand>(nyStreak);
-  const { registrerSvar } = useProfil();
+  const { streak, håndterEtt } = useSvarOrkestrering(leggTilPoeng, oppgaver);
 
   useEffect(() => {
     setSvarTekst(Array(oppgaver.length).fill(""));
     setValgtSant(Array(oppgaver.length).fill(null));
     setSjekket(Array(oppgaver.length).fill(false));
-    setStreak(nyStreak());
   }, [oppgaver]);
 
   function håndterSvar(i: number, erRett: boolean) {
     setSjekket((prev) => oppdaterIndex(prev, i, true));
     const o = oppgaver[i];
     const [min, max] = o.a <= o.b ? [o.a, o.b] : [o.b, o.a];
-    registrerSvar(`${min}×${max}`, erRett);
-    if (erRett) {
-      const r = etterRett(streak);
-      setStreak(r.nyTilstand);
-      leggTilPoeng(poengForGangeOppgave(o) + r.streakBonus);
-    } else {
-      setStreak(etterFeil(streak).nyTilstand);
-    }
+    håndterEtt({
+      erRett,
+      nøkkel: `${min}×${max}`,
+      poengVedRett: poengForGangeOppgave(o),
+    });
   }
 
   function sjekkInput(i: number) {

@@ -3,15 +3,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { Oppgave } from "@/src/domene/typer";
 import { poengForOppgave } from "@/src/domene/poeng";
-import {
-  etterFeil,
-  etterRett,
-  nyStreak,
-  type StreakTilstand,
-} from "@/src/domene/streak";
 import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
-import { useProfil } from "@/src/komponenter/ProfilProvider";
+import { useSvarOrkestrering } from "@/src/komponenter/useSvarOrkestrering";
 import { nøkkelForOppgave } from "@/src/domene/faktaStatus";
 import type { VisualiseringsType } from "@/src/domene/mønsterpakker";
 import { OppgaveRad } from "./OppgaveRad";
@@ -36,19 +30,20 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
 ) {
   const [svar, setSvar] = useState<string[]>(() => Array(oppgaver.length).fill(""));
   const [sjekket, setSjekket] = useState<boolean[]>(() => Array(oppgaver.length).fill(false));
-  const [streak, setStreak] = useState<StreakTilstand>(nyStreak);
-  const { registrerSvar } = useProfil();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const { streak, håndterEtt, håndterMange } = useSvarOrkestrering(
+    leggTilPoeng,
+    oppgaver,
+  );
 
   useImperativeHandle(ref, () => ({
     focusInput: (i: number) => inputRefs.current[i]?.focus(),
   }));
 
-  // Reset state når parent sender nye oppgaver (ny runde)
+  // Reset svar/sjekket når parent sender nye oppgaver (streak resettes av hooken)
   useEffect(() => {
     setSvar(Array(oppgaver.length).fill(""));
     setSjekket(Array(oppgaver.length).fill(false));
-    setStreak(nyStreak());
   }, [oppgaver]);
 
   function sjekkEtt(i: number) {
@@ -56,34 +51,26 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
     const o = oppgaver[i];
     const erRett = Number(svar[i]) === o.svar;
     setSjekket((prev) => oppdaterIndex(prev, i, true));
-    registrerSvar(nøkkelForOppgave(o), erRett);
-    if (erRett) {
-      const r = etterRett(streak);
-      setStreak(r.nyTilstand);
-      leggTilPoeng(poengForOppgave(o) + r.streakBonus);
-    } else {
-      setStreak(etterFeil(streak).nyTilstand);
-    }
+    håndterEtt({
+      erRett,
+      nøkkel: nøkkelForOppgave(o),
+      poengVedRett: poengForOppgave(o),
+    });
   }
 
   function sjekkAlle() {
     const nySjekket = oppgaver.map((_, i) => svar[i] !== "");
     setSjekket(nySjekket);
-    // Spor streak-tilstand lokalt gjennom løkken så vi ikke leser stale state
-    let lokalStreak = streak;
-    oppgaver.forEach((o, i) => {
-      if (sjekket[i] || !nySjekket[i]) return;
-      const erRett = Number(svar[i]) === o.svar;
-      registrerSvar(nøkkelForOppgave(o), erRett);
-      if (erRett) {
-        const r = etterRett(lokalStreak);
-        lokalStreak = r.nyTilstand;
-        leggTilPoeng(poengForOppgave(o) + r.streakBonus);
-      } else {
-        lokalStreak = etterFeil(lokalStreak).nyTilstand;
-      }
-    });
-    setStreak(lokalStreak);
+    håndterMange(
+      oppgaver.flatMap((o, i) => {
+        if (sjekket[i] || !nySjekket[i]) return [];
+        return [{
+          erRett: Number(svar[i]) === o.svar,
+          nøkkel: nøkkelForOppgave(o),
+          poengVedRett: poengForOppgave(o),
+        }];
+      }),
+    );
   }
 
   function prøvIgjen(i: number) {
