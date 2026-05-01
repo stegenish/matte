@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import OppgaveListe, { type OppgaveListeHandle } from "./OppgaveListe";
 import type { Oppgave, Operasjon } from "@/src/domene/typer";
 import { lagOppgaver, type Innstillinger } from "@/src/domene/oppgaver";
+import { useProfil } from "@/src/komponenter/ProfilProvider";
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
@@ -284,17 +286,32 @@ function LilyTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
 // ── Side ──────────────────────────────────────────────────────────────────────
 
 export default function OppgaverSide() {
+  const router = useRouter();
+  const { aktivProfil, oppdater, klar } = useProfil();
   const [aktifTab, setAktifTab] = useState<TabId>("oppgaver");
-  const [poeng, setPoeng] = useState(0);
+
+  // Send tilbake til startside hvis ingen profil er valgt
+  useEffect(() => {
+    if (klar && !aktivProfil) router.replace("/");
+  }, [klar, aktivProfil, router]);
+
+  if (!klar || !aktivProfil) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-yellow-100">
+        <p className="text-2xl text-gray-500">Laster …</p>
+      </main>
+    );
+  }
 
   function leggTilPoeng(p: number) {
-    setPoeng((prev) => prev + p);
+    if (!aktivProfil) return;
+    oppdater({ ...aktivProfil, poeng: aktivProfil.poeng + p });
   }
 
   return (
     <main className="min-h-screen bg-yellow-100 flex flex-col">
       {/* Topp-linje */}
-      <div className="flex items-center px-6 py-4">
+      <div className="flex items-center px-6 py-4 gap-3">
         <Link
           href="/"
           className="text-xl font-bold text-green-600 hover:text-green-700"
@@ -304,9 +321,16 @@ export default function OppgaverSide() {
         <h1 className="flex-1 text-center text-3xl font-black text-purple-600">
           Matteoppgaver
         </h1>
+        <span
+          className="text-3xl"
+          aria-label={`Innlogget som ${aktivProfil.navn}`}
+          title={aktivProfil.navn}
+        >
+          {aktivProfil.avatar}
+        </span>
       </div>
 
-      <Poengvisning poeng={poeng} />
+      <Poengvisning poeng={aktivProfil.poeng} />
 
       {/* Tabs */}
       <TabBar aktiv={aktifTab} onChange={setAktifTab} />

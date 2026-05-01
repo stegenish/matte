@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ProfilProvider } from "@/src/komponenter/ProfilProvider";
 
 export const metadata: Metadata = {
   title: "Matteapp",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nb">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <ProfilProvider>{children}</ProfilProvider>
+      </body>
     </html>
   );
 }
