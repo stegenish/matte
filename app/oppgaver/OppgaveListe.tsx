@@ -11,6 +11,7 @@ import {
 } from "@/src/domene/streak";
 import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
+import type { VisualiseringsType } from "@/src/domene/mønsterpakker";
 import { OppgaveRad } from "./OppgaveRad";
 
 export interface OppgaveListeHandle {
@@ -22,10 +23,11 @@ interface Props {
   leggTilPoeng: (p: number) => void;
   onNyRunde: () => void;
   onEnterAt?: (i: number) => void;
+  visualiseringsType?: VisualiseringsType;
 }
 
 const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe(
-  { oppgaver, leggTilPoeng, onNyRunde, onEnterAt },
+  { oppgaver, leggTilPoeng, onNyRunde, onEnterAt, visualiseringsType },
   ref,
 ) {
   const [svar, setSvar] = useState<string[]>(() => Array(oppgaver.length).fill(""));
@@ -115,6 +117,7 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
             inputRefs.current[i] = el;
           }}
           autoFocus={i === 0}
+          visualiseringsType={visualiseringsType}
           onSvarEndret={(verdi) => setSvar((prev) => oppdaterIndex(prev, i, verdi))}
           onBlur={() => sjekkEtt(i)}
           onEnter={() => håndterEnter(i)}

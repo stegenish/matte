@@ -1,10 +1,15 @@
 import type { Oppgave } from "./typer";
 
+// Visualiseringstype som UI rendrer ved siden av hver oppgave.
+// "tiervenner-utstrøk" = ten-frame med 10 prikker, b av dem krysset ut.
+export type VisualiseringsType = "tiervenner-utstrøk";
+
 export interface Mønsterpakke {
   id: string;
   navn: string;
   beskrivelse: string;
   generer: () => Oppgave[];
+  visualiseringsType?: VisualiseringsType;
 }
 
 const TALL_MED_9 = [9, 19, 29, 39, 49, 59, 69, 79, 89, 99] as const;
@@ -32,6 +37,7 @@ export const FORHÅNDS_PAKKER: Mønsterpakke[] = [
     id: "tiervenner",
     navn: "Tiervenner",
     beskrivelse: "10 minus hvert tall — finn vennen som mangler",
+    visualiseringsType: "tiervenner-utstrøk",
     generer: () =>
       fraTilEnerSekvens(1, 9).map((b) => ({
         a: 10,

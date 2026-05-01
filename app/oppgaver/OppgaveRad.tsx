@@ -2,6 +2,8 @@
 
 import { type Ref } from "react";
 import type { Oppgave } from "@/src/domene/typer";
+import type { VisualiseringsType } from "@/src/domene/mønsterpakker";
+import { TenFrame } from "@/src/komponenter/TenFrame";
 
 interface Props {
   index: number;
@@ -10,6 +12,7 @@ interface Props {
   riktig: boolean | null;     // null = ikke sjekket ennå
   inputRef: Ref<HTMLInputElement | null>;
   autoFocus: boolean;
+  visualiseringsType?: VisualiseringsType;
   onSvarEndret: (verdi: string) => void;
   onBlur: () => void;
   onEnter: () => void;
@@ -23,6 +26,7 @@ export function OppgaveRad({
   riktig,
   inputRef,
   autoFocus,
+  visualiseringsType,
   onSvarEndret,
   onBlur,
   onEnter,
@@ -30,7 +34,7 @@ export function OppgaveRad({
 }: Props) {
   return (
     <div
-      className={`flex items-center gap-3 p-3 rounded-2xl border-2 ${
+      className={`flex items-center gap-3 p-3 rounded-2xl border-2 flex-wrap ${
         riktig === true
           ? "border-green-400 bg-green-50"
           : riktig === false
@@ -70,6 +74,9 @@ export function OppgaveRad({
       />
       {riktig === true && <span className="text-2xl shrink-0">✅</span>}
       {riktig === false && <span className="text-2xl shrink-0">❌</span>}
+      {visualiseringsType === "tiervenner-utstrøk" && (
+        <TenFrame total={10} krysset={oppgave.b} />
+      )}
     </div>
   );
 }

@@ -73,6 +73,7 @@ export function PakkerTab({ leggTilPoeng }: Props) {
               oppgaver={oppgaver}
               leggTilPoeng={leggTilPoeng}
               onNyRunde={nyRunde}
+              visualiseringsType={valgtPakke.visualiseringsType}
             />
           </div>
         )}
