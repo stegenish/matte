@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { profilLager as standardLager } from "@/src/lagring/profilLager";
 import type { ProfilLager } from "@/src/lagring/profilLager";
 import { lagNyProfil, type Profil } from "@/src/domene/profil";
@@ -38,12 +45,33 @@ interface Props {
 export function ProfilProvider({ children, lager = standardLager }: Props) {
   const [klar, setKlar] = useState(false);
   const [alleProfiler, setAlleProfiler] = useState<Profil[]>([]);
-  const [aktivId, setAktivId] = useState<string | null>(null);
+  const [aktivId, setAktivIdState] = useState<string | null>(null);
+  // Ref holder synkronisert aktivId-verdi. Brukes inni setAlleProfiler-callbacks
+  // som ellers ville sett stale closure-verdi når flere oppdateringer kommer
+  // tett etter hverandre (f.eks. opprett+oppdater i samme act-blokk i tester).
+  const aktivIdRef = useRef<string | null>(null);
+
+  function setAktivId(id: string | null) {
+    aktivIdRef.current = id;
+    setAktivIdState(id);
+  }
 
   useEffect(() => {
-    setAlleProfiler(lager.hentAlle());
-    setAktivId(lager.hentAktivId());
-    setKlar(true);
+    let avbrutt = false;
+    Promise.all([lager.hentAlle(), lager.hentAktivId()])
+      .then(([profiler, lastetAktivId]) => {
+        if (avbrutt) return;
+        setAlleProfiler(profiler);
+        setAktivId(lastetAktivId);
+        setKlar(true);
+      })
+      .catch((err) => {
+        console.error("Kunne ikke laste profiler:", err);
+        if (!avbrutt) setKlar(true);
+      });
+    return () => {
+      avbrutt = true;
+    };
   }, [lager]);
 
   const aktivProfil =
@@ -54,46 +82,53 @@ export function ProfilProvider({ children, lager = standardLager }: Props) {
     settLydAv(aktivProfil?.lydAv ?? false);
   }, [aktivProfil?.lydAv]);
 
+  // Fire-and-forget lager-skriving. Logger feil men blokkerer ikke UI.
+  function persisterStille(løfte: Promise<unknown>, kontekst: string): void {
+    løfte.catch((err) => console.error(`Lagring feilet (${kontekst}):`, err));
+  }
+
   function velg(id: string) {
-    lager.settAktivId(id);
+    persisterStille(lager.settAktivId(id), "velg");
     setAktivId(id);
   }
 
   function opprett(navn: string, avatar: string): Profil {
     const ny = lagNyProfil(navn, avatar);
-    lager.lagre(ny);
-    lager.settAktivId(ny.id);
+    persisterStille(lager.lagre(ny), "opprett.lagre");
+    persisterStille(lager.settAktivId(ny.id), "opprett.settAktiv");
     setAlleProfiler((prev) => [...prev, ny]);
     setAktivId(ny.id);
     return ny;
   }
 
   function loggUt() {
-    lager.settAktivId(null);
+    persisterStille(lager.settAktivId(null), "loggUt");
     setAktivId(null);
   }
 
   function oppdater(fn: ProfilOppdatering) {
+    const id = aktivIdRef.current;
+    if (!id) return;
     setAlleProfiler((prev) => {
       let oppdatertProfil: Profil | undefined;
       const ny = prev.map((p) => {
-        if (p.id !== aktivId) return p;
+        if (p.id !== id) return p;
         oppdatertProfil = fn(p);
         return oppdatertProfil;
       });
       // Persisterer her i stedet for utenfor settere så vi alltid får siste verdi.
       // I React Strict Mode kalles setteren to ganger, så lager.lagre kalles to ganger
-      // med samme verdi — idempotent for localStorage, og deduplisering kan legges til
-      // i lager-implementasjonen senere hvis nødvendig.
-      if (oppdatertProfil) lager.lagre(oppdatertProfil);
+      // med samme verdi — idempotent for localStorage. Deduplisering kan legges til
+      // i lager-implementasjonen senere hvis det blir et problem mot Supabase.
+      if (oppdatertProfil) persisterStille(lager.lagre(oppdatertProfil), "oppdater");
       return ny;
     });
   }
 
   function slett(id: string) {
-    lager.slett(id);
+    persisterStille(lager.slett(id), "slett");
     setAlleProfiler((prev) => prev.filter((p) => p.id !== id));
-    if (aktivId === id) setAktivId(null);
+    if (aktivIdRef.current === id) setAktivId(null);
   }
 
   function registrerSvar(oppgaveNøkkel: string | null, riktig: boolean) {
