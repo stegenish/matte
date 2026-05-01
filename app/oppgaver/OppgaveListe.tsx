@@ -1,26 +1,8 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-
-// ── Typer ─────────────────────────────────────────────────────────────────────
-
-export type Operasjon = "+" | "-" | "×" | "÷";
-
-export interface Oppgave {
-  a: number;
-  b: number;
-  operasjon: Operasjon;
-  svar: number;
-}
-
-// ── Poeng ─────────────────────────────────────────────────────────────────────
-
-// 1 poeng per siffer i svaret (maks 6), +5 for ×, +10 for ÷
-export function poengForOppgave(oppgave: Oppgave): number {
-  const sifre = Math.min(String(Math.abs(oppgave.svar)).length, 6);
-  const bonus = oppgave.operasjon === "×" ? 5 : oppgave.operasjon === "÷" ? 10 : 0;
-  return sifre + bonus;
-}
+import type { Oppgave } from "@/src/domene/typer";
+import { poengForOppgave } from "@/src/domene/poeng";
 
 // ── OppgaveListe ──────────────────────────────────────────────────────────────
 

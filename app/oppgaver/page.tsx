@@ -2,60 +2,13 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import OppgaveListe, { type Oppgave, type Operasjon, type OppgaveListeHandle } from "./OppgaveListe";
+import OppgaveListe, { type OppgaveListeHandle } from "./OppgaveListe";
+import type { Oppgave, Operasjon } from "@/src/domene/typer";
+import { lagOppgaver, type Innstillinger } from "@/src/domene/oppgaver";
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
 type TabId = "oppgaver" | "lily";
-
-interface Innstillinger {
-  sifrerA: number;
-  sifrerB: number;
-  operasjoner: Operasjon[];
-  antallOppgaver: number;
-}
-
-// ── Hjelpefunksjoner ─────────────────────────────────────────────────────────
-
-// Returnerer et tilfeldig tall med nøyaktig n sifre
-function tilfeldigMedSifre(n: number): number {
-  const min = n === 1 ? 1 : Math.pow(10, n - 1);
-  const max = Math.pow(10, n) - 1;
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function lagOppgave(innstillinger: Innstillinger): Oppgave {
-  const { sifrerA, sifrerB, operasjoner } = innstillinger;
-  const operasjon = operasjoner[Math.floor(Math.random() * operasjoner.length)];
-
-  if (operasjon === "+") {
-    const a = tilfeldigMedSifre(sifrerA);
-    const b = tilfeldigMedSifre(sifrerB);
-    return { a, b, operasjon, svar: a + b };
-  }
-  if (operasjon === "-") {
-    const x = tilfeldigMedSifre(sifrerA);
-    const y = tilfeldigMedSifre(sifrerB);
-    // sørg for at a >= b slik at svaret ikke er negativt
-    const [a, b] = x >= y ? [x, y] : [y, x];
-    return { a, b, operasjon, svar: a - b };
-  }
-  if (operasjon === "×") {
-    const a = tilfeldigMedSifre(sifrerA);
-    const b = tilfeldigMedSifre(sifrerB);
-    return { a, b, operasjon, svar: a * b };
-  }
-  // ÷ — garantert heltallssvar; b bruker sifrerB, kvotienten er 1–9
-  const b = tilfeldigMedSifre(sifrerB);
-  const svar = Math.floor(Math.random() * 9) + 1;
-  return { a: b * svar, b, operasjon, svar };
-}
-
-function lagOppgaver(innstillinger: Innstillinger): Oppgave[] {
-  return Array.from({ length: innstillinger.antallOppgaver }, () =>
-    lagOppgave(innstillinger)
-  );
-}
 
 const SIFFER_VALG = [1, 2, 3];
 const ANTALL_VALG = [5, 10, 15, 20];
