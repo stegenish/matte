@@ -5,6 +5,7 @@ import { useProfil } from "@/src/komponenter/ProfilProvider";
 import { Profilvelger } from "@/src/komponenter/Profilvelger";
 import { Tårn, FunFactForEtasje } from "@/src/komponenter/Tårn";
 import { nivåForPoeng, tårnEtasjeForIndex } from "@/src/domene/titler";
+import { harGjortIDag } from "@/src/domene/dagligUtfordring";
 
 export default function Home() {
   const { aktivProfil, loggUt, klar } = useProfil();
@@ -21,6 +22,7 @@ export default function Home() {
 
   const nivå = nivåForPoeng(aktivProfil.poeng);
   const etasje = tårnEtasjeForIndex(nivå.index);
+  const dagligGjort = harGjortIDag(aktivProfil);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-yellow-100 py-12 px-6 gap-6">
@@ -46,12 +48,27 @@ export default function Home() {
         <FunFactForEtasje etasje={etasje} />
       </div>
 
-      <Link
-        href="/oppgaver"
-        className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-3xl font-black px-12 py-5 rounded-3xl border-4 border-green-700 transition-colors shadow-lg"
-      >
-        Start!
-      </Link>
+      <div className="flex flex-col items-center gap-3">
+        <Link
+          href="/oppgaver"
+          className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-3xl font-black px-12 py-5 rounded-3xl border-4 border-green-700 transition-colors shadow-lg"
+        >
+          Start!
+        </Link>
+        {!dagligGjort && (
+          <Link
+            href="/utfordring"
+            className="bg-orange-500 hover:bg-orange-600 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-orange-700 transition-colors shadow"
+          >
+            🎯 Dagens utfordring
+          </Link>
+        )}
+        {dagligGjort && (
+          <p className="text-sm font-bold text-gray-500">
+            ✓ Dagens utfordring er gjort
+          </p>
+        )}
+      </div>
     </main>
   );
 }

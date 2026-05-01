@@ -26,10 +26,12 @@ interface Props {
   onNyRunde: () => void;
   onEnterAt?: (i: number) => void;
   visualiseringsType?: VisualiseringsType;
+  // Kalles én gang når alle oppgavene er sjekket
+  onFerdig?: () => void;
 }
 
 const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe(
-  { oppgaver, leggTilPoeng, onNyRunde, onEnterAt, visualiseringsType },
+  { oppgaver, leggTilPoeng, onNyRunde, onEnterAt, visualiseringsType, onFerdig },
   ref,
 ) {
   const [svar, setSvar] = useState<string[]>(() => Array(oppgaver.length).fill(""));
@@ -102,6 +104,11 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
   const antallRiktige = oppgaver.filter(
     (o, i) => sjekket[i] && Number(svar[i]) === o.svar,
   ).length;
+
+  useEffect(() => {
+    if (alleSjekket && onFerdig) onFerdig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alleSjekket]);
 
   return (
     <div className="flex flex-col gap-4 max-w-xl">
