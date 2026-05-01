@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import OppgaveListe, { type OppgaveListeHandle } from "./OppgaveListe";
+import OppgaveListe from "./OppgaveListe";
+import { PakkerTab } from "./PakkerTab";
 import type { Oppgave, Operasjon } from "@/src/domene/typer";
 import { lagOppgaver, type Innstillinger } from "@/src/domene/oppgaver";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
@@ -14,7 +15,7 @@ import { nivåForPoeng, tårnEtasjeForIndex, type Nivå } from "@/src/domene/tit
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
-type TabId = "oppgaver" | "lily";
+type TabId = "oppgaver" | "pakker";
 
 const SIFFER_VALG = [1, 2, 3];
 const ANTALL_VALG = [5, 10, 15, 20];
@@ -22,7 +23,7 @@ const ALLE_OPERASJONER: Operasjon[] = ["+", "-", "×", "÷"];
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "oppgaver", label: "Oppgaver" },
-  { id: "lily", label: "Lily" },
+  { id: "pakker", label: "Pakker" },
 ];
 
 // ── TabBar ────────────────────────────────────────────────────────────────────
@@ -228,54 +229,6 @@ function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
   );
 }
 
-// ── LilyTab ───────────────────────────────────────────────────────────────────
-
-// Tallene som slutter på 9 (+1) og 8 (+2) opp til 100, parvis med svaret minus tillegget
-const TALL_MED_9 = [9, 19, 29, 39, 49, 59, 69, 79, 89, 99];
-const TALL_MED_8 = [8, 18, 28, 38, 48, 58, 68, 78, 88, 98];
-const LILY_PLUSS: Oppgave[] = [
-  ...TALL_MED_9.map((a) => ({ a, b: 1, operasjon: "+" as Operasjon, svar: a + 1 })),
-  ...TALL_MED_8.map((a) => ({ a, b: 2, operasjon: "+" as Operasjon, svar: a + 2 })),
-];
-const LILY_MINUS: Oppgave[] = [
-  ...TALL_MED_9.map((a) => ({ a: a + 1, b: 1, operasjon: "-" as Operasjon, svar: a })),
-  ...TALL_MED_8.map((a) => ({ a: a + 2, b: 2, operasjon: "-" as Operasjon, svar: a })),
-];
-
-function LilyTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
-  const [plussOppgaver, setPlussOppgaver] = useState<Oppgave[]>(LILY_PLUSS);
-  const [minusOppgaver, setMinusOppgaver] = useState<Oppgave[]>(LILY_MINUS);
-  const plussRef = useRef<OppgaveListeHandle>(null);
-  const minusRef = useRef<OppgaveListeHandle>(null);
-
-  function nyRunde() {
-    // Spread for å lage ny arrayreferanse → utløser useEffect-reset i OppgaveListe
-    setPlussOppgaver([...LILY_PLUSS]);
-    setMinusOppgaver([...LILY_MINUS]);
-  }
-
-  return (
-    <section className="flex-1 p-6 overflow-y-auto">
-      <div className="flex gap-8 flex-wrap">
-        <OppgaveListe
-          ref={plussRef}
-          oppgaver={plussOppgaver}
-          leggTilPoeng={leggTilPoeng}
-          onNyRunde={nyRunde}
-          onEnterAt={(i) => minusRef.current?.focusInput(i)}
-        />
-        <OppgaveListe
-          ref={minusRef}
-          oppgaver={minusOppgaver}
-          leggTilPoeng={leggTilPoeng}
-          onNyRunde={nyRunde}
-          onEnterAt={(i) => plussRef.current?.focusInput(i + 1)}
-        />
-      </div>
-    </section>
-  );
-}
-
 // ── Side ──────────────────────────────────────────────────────────────────────
 
 export default function OppgaverSide() {
@@ -364,7 +317,7 @@ export default function OppgaverSide() {
       {/* Tab-innhold */}
       <div className="flex flex-col flex-1 bg-white border-2 border-yellow-300 mx-2 mb-2 rounded-b-2xl rounded-tr-2xl overflow-hidden">
         {aktivTab === "oppgaver" && <OppgaverTab leggTilPoeng={leggTilPoeng} />}
-        {aktivTab === "lily" && <LilyTab leggTilPoeng={leggTilPoeng} />}
+        {aktivTab === "pakker" && <PakkerTab leggTilPoeng={leggTilPoeng} />}
       </div>
 
       {feiretNivå && (
