@@ -21,6 +21,7 @@ interface Props {
 
 const TABELL_VALG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const ANTALL_VALG = [5, 10, 15, 20];
+const GANGERIADER = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const VARIANT_LABEL: Record<GangeVariant, string> = {
   klassisk: "Klassisk (7 × 8 = ?)",
@@ -37,6 +38,7 @@ export function GangeTab({ leggTilPoeng }: Props) {
   });
   const [oppgaver, setOppgaver] = useState<GangeOppgave[]>([]);
   const [lynRunde, setLynRunde] = useState(false);
+  const [visGangetabell, setVisGangetabell] = useState(true);
 
   function generer() {
     setOppgaver(lagGangerunde(innstillinger));
@@ -142,6 +144,12 @@ export function GangeTab({ leggTilPoeng }: Props) {
 
         <div className="mt-auto flex flex-col gap-2">
           <button
+            onClick={() => setVisGangetabell((vis) => !vis)}
+            className="bg-white hover:bg-yellow-50 text-purple-700 text-lg font-black px-6 py-3 rounded-2xl border-2 border-purple-300 transition-colors shadow"
+          >
+            {visGangetabell ? "Skjul gangetabell" : "Vis gangetabell"}
+          </button>
+          <button
             onClick={generer}
             disabled={innstillinger.tabeller.length === 0}
             className="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 disabled:border-gray-400 transition-colors shadow"
@@ -158,22 +166,82 @@ export function GangeTab({ leggTilPoeng }: Props) {
         </div>
       </aside>
 
-      <section className="flex-1 p-6 overflow-y-auto">
-        {oppgaver.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-400">
-            <p className="text-6xl">✖️</p>
-            <p className="text-xl font-bold">
-              Velg tabeller og varianter, trykk Generer!
-            </p>
-          </div>
-        ) : (
-          <GangeOppgaveListe
-            oppgaver={oppgaver}
-            leggTilPoeng={leggTilPoeng}
-            onNyRunde={generer}
-          />
-        )}
+      <section className="flex-1 p-6 overflow-y-auto flex gap-8 flex-wrap">
+        <div className="flex-1 min-w-72">
+          {oppgaver.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-400">
+              <p className="text-6xl">✖️</p>
+              <p className="text-xl font-bold">
+                Velg tabeller og varianter, trykk Generer!
+              </p>
+            </div>
+          ) : (
+            <GangeOppgaveListe
+              oppgaver={oppgaver}
+              leggTilPoeng={leggTilPoeng}
+              onNyRunde={generer}
+            />
+          )}
+        </div>
+        {visGangetabell && <Gangetabell />}
       </section>
+    </div>
+  );
+}
+
+function Gangetabell() {
+  return (
+    <div className="shrink-0 overflow-auto">
+      <h2 className="text-lg font-black text-gray-600 mb-2 text-center">
+        Gangetabell
+      </h2>
+      <table
+        aria-label="Gangetabell"
+        className="border-collapse text-center text-base font-bold"
+      >
+        <thead>
+          <tr>
+            <th className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">
+              ×
+            </th>
+            {GANGERIADER.map((n) => (
+              <th
+                key={n}
+                className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200"
+              >
+                {n}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {GANGERIADER.map((a) => (
+            <tr key={a}>
+              <th className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">
+                {a}
+              </th>
+              {GANGERIADER.map((b) => {
+                const mørkRad = a % 2 === 0;
+                const mørkKol = b % 2 === 0;
+                const bg =
+                  mørkRad && mørkKol
+                    ? "bg-yellow-100"
+                    : mørkRad || mørkKol
+                      ? "bg-yellow-50"
+                      : "bg-white";
+                return (
+                  <td
+                    key={b}
+                    className={`w-12 h-12 border border-yellow-200 text-gray-700 hover:bg-orange-100 ${bg}`}
+                  >
+                    {a * b}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
