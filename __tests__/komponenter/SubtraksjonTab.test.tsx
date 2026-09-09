@@ -132,6 +132,10 @@ describe("SubtraksjonTab eksempelmodus", () => {
     jest.useFakeTimers();
 
     fireEvent.click(screen.getByRole("button", { name: "Vis eksempel" }));
+    act(() => jest.advanceTimersByTime(749));
+    expect(screen.getByRole("button", { name: "Tom rute 1" })).toBeInTheDocument();
+    act(() => jest.advanceTimersByTime(1));
+    expect(screen.getByRole("button", { name: "Ball 1, igjen" })).toBeInTheDocument();
     act(() => jest.runAllTimers());
 
     expect(screen.getByText("3 − 1 = 2")).toBeInTheDocument();

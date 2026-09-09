@@ -27,6 +27,7 @@ interface Props {
 type Modus = "øv" | "eksempel";
 
 const MAKSIMUM_VALG = [10, 20];
+const EKSEMPEL_STEG_MS = 750;
 
 export function SubtraksjonTab({
   leggTilPoeng,
@@ -457,7 +458,7 @@ function SubtraksjonsEksempel({
 
   useEffect(() => {
     const timere = Array.from({ length: antallHandlinger + 1 }, (_, index) =>
-      window.setTimeout(() => setSteg(index + 1), (index + 1) * 450),
+      window.setTimeout(() => setSteg(index + 1), (index + 1) * EKSEMPEL_STEG_MS),
     );
     return () => timere.forEach((timer) => window.clearTimeout(timer));
   }, [antallHandlinger]);
