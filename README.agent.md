@@ -28,9 +28,10 @@ Legg regler i `src/domene`, ikke i en rute eller presentasjonskomponent. UI-komp
 
 ## Oppgaveflyt
 
-`OppgaverSide` har fanene `oppgaver`, `pakker`, `tall` og `gange`.
+`OppgaverSide` har fanene `oppgaver`, `subtraksjon`, `pakker`, `tall` og `gange`.
 
 - `OppgaverTab.tsx` genererer vanlige `Oppgave`-objekter med `+`, `-`, `×` eller `÷`.
+- `SubtraksjonTab.tsx` lærer bort `A − B = C` konkret: barnet legger til `A` baller, krysser ut `B` og svarer hvor mange som er igjen. Eksempelmodus animerer samme handling uten å registrere svar eller poeng.
 - `PakkerTab.tsx` bruker navngitte mønsterpakker og samme `OppgaveListe`.
 - `TallTab.tsx` bruker den diskriminerte unionen `TallOppgave` for lese- og skriveoppgaver.
 - `GangeTab.tsx` bruker den diskriminerte unionen `GangeOppgave` for fire gangevarianter og kan starte `LynRunde`.
@@ -60,7 +61,7 @@ Profilskjemaet normaliseres i `fyllInnDefaults`. Ved nye profilfelt:
 
 - Ett brukerforsøk registreres og premieres høyst én gang.
 - Minst én valgt operasjon eller gangevariant beholdes.
-- Subtraksjon genererer ikke negative svar.
+- Subtraksjon genererer ikke negative svar. Den konkrete subtraksjonsfanen viser `B + ? = A` til barnet har svart riktig, slik at addisjonen ikke røper svaret.
 - Divisjon genererer heltallssvar. `sifrerA` er foreløpig ikke en garantert begrensning for divisjon.
 - Daglig bonus kan gis én gang per lokal kalenderdag; regelen håndheves av `belønnDagligUtfordring`.
 - Nye varianter skal legges til i diskriminerte unions og håndteres eksplisitt i generator, fasit og UI.

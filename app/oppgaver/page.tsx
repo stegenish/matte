@@ -7,6 +7,7 @@ import { OppgaverTab } from "./OppgaverTab";
 import { PakkerTab } from "./PakkerTab";
 import { TallTab } from "./TallTab";
 import { GangeTab } from "./GangeTab";
+import { SubtraksjonTab } from "./SubtraksjonTab";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
 import { Tittelvisning } from "@/src/komponenter/Tittelvisning";
 import { Tittelfeiring } from "@/src/komponenter/Tittelfeiring";
@@ -21,11 +22,12 @@ const SESJONSLENGDE_MS = 5 * 60 * 1000; // 5 min
 
 // ── Typer ────────────────────────────────────────────────────────────────────
 
-type TabId = "oppgaver" | "pakker" | "tall" | "gange";
+type TabId = "oppgaver" | "subtraksjon" | "pakker" | "tall" | "gange";
 
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "oppgaver", label: "Oppgaver" },
+  { id: "subtraksjon", label: "Ta bort" },
   { id: "pakker", label: "Pakker" },
   { id: "tall", label: "Tall" },
   { id: "gange", label: "Gange" },
@@ -41,12 +43,12 @@ function TabBar({
   onChange: (id: TabId) => void;
 }) {
   return (
-    <div className="flex gap-2 px-6 pt-4">
+    <div className="flex flex-wrap gap-2 px-3 md:px-6 pt-4">
       {TABS.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
-          className={`px-6 py-2 rounded-t-2xl font-black text-lg border-2 border-b-0 transition-colors ${
+          className={`px-4 md:px-6 py-2 rounded-t-2xl font-black text-lg border-2 border-b-0 transition-colors ${
             aktiv === tab.id
               ? "bg-yellow-200 border-yellow-300 text-purple-600"
               : "bg-white border-yellow-300 text-gray-500 hover:bg-yellow-50"
@@ -131,14 +133,15 @@ export default function OppgaverSide() {
   return (
     <main className="min-h-screen bg-yellow-100 flex flex-col">
       {/* Topp-linje */}
-      <div className="flex items-center px-6 py-4 gap-3">
+      <div className="flex items-center px-3 md:px-6 py-4 gap-2 md:gap-3">
         <Link
           href="/"
-          className="text-xl font-bold text-green-600 hover:text-green-700"
+          aria-label="Tilbake til startsiden"
+          className="text-xl font-bold text-green-600 hover:text-green-700 shrink-0"
         >
-          ← Tilbake
+          ←<span className="hidden sm:inline"> Tilbake</span>
         </Link>
-        <h1 className="flex-1 text-center text-3xl font-black text-purple-600">
+        <h1 className="flex-1 min-w-0 text-center text-xl sm:text-3xl font-black text-purple-600">
           Matteoppgaver
         </h1>
         <button
@@ -158,7 +161,7 @@ export default function OppgaverSide() {
           🐲
         </button>
         <span
-          className="text-3xl"
+          className="text-2xl sm:text-3xl"
           aria-label={`Innlogget som ${aktivProfil.navn}`}
           title={aktivProfil.navn}
         >
@@ -177,6 +180,9 @@ export default function OppgaverSide() {
       {/* Tab-innhold */}
       <div className="flex flex-col flex-1 bg-white border-2 border-yellow-300 mx-2 mb-2 rounded-b-2xl rounded-tr-2xl overflow-hidden">
         {aktivTab === "oppgaver" && <OppgaverTab leggTilPoeng={leggTilPoeng} />}
+        {aktivTab === "subtraksjon" && (
+          <SubtraksjonTab leggTilPoeng={leggTilPoeng} />
+        )}
         {aktivTab === "pakker" && <PakkerTab leggTilPoeng={leggTilPoeng} />}
         {aktivTab === "tall" && <TallTab leggTilPoeng={leggTilPoeng} />}
         {aktivTab === "gange" && <GangeTab leggTilPoeng={leggTilPoeng} />}
