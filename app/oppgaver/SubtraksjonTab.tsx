@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   antallBaller,
   antallIgjen,
@@ -167,26 +167,27 @@ export function Subtraksjonsaktivitet({
   }
 
   return (
-    <div className="mt-4 flex flex-col xl:flex-row gap-8 items-start">
-      <div className="flex flex-col gap-4">
+    <div className="mt-4 flex flex-col gap-4 w-full max-w-2xl">
+      <Ballarbeidsflate
+        oppgave={oppgave}
+        visSvar={resultat === true}
+        modell={modell}
+        fase={fase}
+        onKlikk={
+          resultat === true
+            ? undefined
+            : (index) => {
+                setResultat(null);
+                setModell((forrige) => klikkBall(forrige, index, oppgave));
+              }
+        }
+      >
         <Faseforklaring fase={fase} modell={modell} oppgave={oppgave} />
-        <Ballerutenett
-          modell={modell}
-          fase={fase}
-          onKlikk={
-            resultat === true
-              ? undefined
-              : (index) => {
-                  setResultat(null);
-                  setModell((forrige) => klikkBall(forrige, index, oppgave));
-                }
-          }
-        />
-      </div>
+      </Ballarbeidsflate>
 
-      <div className="flex flex-col gap-5 w-full max-w-xl">
-        <Sammenheng oppgave={oppgave} visSvar={resultat === true} />
+      <Addisjonssjekk oppgave={oppgave} visSvar={resultat === true} />
 
+      <div className="flex flex-col gap-4">
         <label className="flex flex-col gap-2 text-lg font-black text-gray-700">
           Hvor mange har jeg igjen?
           <div className="flex flex-wrap items-center gap-3">
@@ -280,7 +281,7 @@ function Faseforklaring({
   );
 }
 
-function Sammenheng({
+function Subtraksjonsuttrykk({
   oppgave,
   visSvar,
 }: {
@@ -289,18 +290,28 @@ function Sammenheng({
 }) {
   const svar = visSvar ? oppgave.svar : "?";
   return (
-    <div
-      aria-label="Sammenheng mellom subtraksjon og addisjon"
-      className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-3xl bg-yellow-50 border-4 border-yellow-300 p-5 text-center"
+    <p className="text-4xl sm:text-5xl font-black text-purple-700 text-center">
+      {oppgave.a} − {oppgave.b} = {svar}
+    </p>
+  );
+}
+
+function Addisjonssjekk({
+  oppgave,
+  visSvar,
+}: {
+  oppgave: Subtraksjonsoppgave;
+  visSvar: boolean;
+}) {
+  const svar = visSvar ? oppgave.svar : "?";
+  return (
+    <p
+      role="note"
+      aria-label="Sjekk med addisjon"
+      className="text-sm font-bold text-gray-500 pl-1"
     >
-      <p className="text-3xl font-black text-purple-700">
-        {oppgave.a} − {oppgave.b} = {svar}
-      </p>
-      <span className="text-2xl text-orange-500" aria-hidden="true">↔</span>
-      <p className="text-3xl font-black text-green-700">
-        {oppgave.b} + {svar} = {oppgave.a}
-      </p>
-    </div>
+      Sjekk med pluss: {oppgave.b} + {svar} = {oppgave.a}
+    </p>
   );
 }
 
@@ -309,6 +320,39 @@ interface RutenettProps {
   fase: Subtraksjonsfase;
   onKlikk?: (index: number) => void;
   pekerIndex?: number | null;
+}
+
+interface BallarbeidsflateProps extends RutenettProps {
+  oppgave: Subtraksjonsoppgave;
+  visSvar: boolean;
+  children: ReactNode;
+}
+
+function Ballarbeidsflate({
+  oppgave,
+  visSvar,
+  modell,
+  fase,
+  onKlikk,
+  pekerIndex,
+  children,
+}: BallarbeidsflateProps) {
+  return (
+    <section
+      role="group"
+      aria-label="Subtraksjonen med baller"
+      className="flex flex-col items-center gap-4 rounded-3xl border-4 border-blue-200 bg-blue-50/40 p-4 sm:p-6"
+    >
+      <Subtraksjonsuttrykk oppgave={oppgave} visSvar={visSvar} />
+      <div className="w-full">{children}</div>
+      <Ballerutenett
+        modell={modell}
+        fase={fase}
+        onKlikk={onKlikk}
+        pekerIndex={pekerIndex}
+      />
+    </section>
+  );
 }
 
 function Ballerutenett({
@@ -435,14 +479,14 @@ function SubtraksjonsEksempel({
         </button>
       </div>
 
-      <div className="flex flex-col xl:flex-row gap-8 items-start">
-        <Ballerutenett
+      <div className="flex flex-col gap-4 w-full max-w-2xl">
+        <Ballarbeidsflate
+          oppgave={oppgave}
+          visSvar={ferdig}
           modell={modell}
           fase={fase}
           pekerIndex={pekerIndex}
-        />
-        <div className="flex flex-col gap-4 w-full max-w-xl">
-          <Sammenheng oppgave={oppgave} visSvar={ferdig} />
+        >
           <p className="text-xl font-black text-purple-700" aria-live="polite">
             {ferdig
               ? `${antallIgjen(modell)} baller er igjen.`
@@ -450,12 +494,13 @@ function SubtraksjonsEksempel({
                 ? `Legger til ball ${lagtTil + 1} av ${oppgave.a}.`
                 : fase === "ta-bort"
                   ? `Tar bort ball ${tattBort + 1} av ${oppgave.b}.`
-                  : "Teller ballene som er igjen …"}
+                : "Teller ballene som er igjen …"}
           </p>
-          <p className="font-bold text-gray-600">
-            Eksempler gir ikke poeng. De er bare til for å se og forstå.
-          </p>
-        </div>
+        </Ballarbeidsflate>
+        <Addisjonssjekk oppgave={oppgave} visSvar={ferdig} />
+        <p className="font-bold text-gray-600">
+          Eksempler gir ikke poeng. De er bare til for å se og forstå.
+        </p>
       </div>
     </div>
   );

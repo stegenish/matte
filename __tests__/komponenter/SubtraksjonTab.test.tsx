@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   Subtraksjonsaktivitet,
@@ -25,7 +25,15 @@ describe("Subtraksjonsaktivitet", () => {
       />,
     );
 
-    expect(screen.getByText("1 + ? = 3")).toBeInTheDocument();
+    const arbeidsflate = screen.getByRole("group", {
+      name: "Subtraksjonen med baller",
+    });
+    expect(within(arbeidsflate).getByText("3 − 1 = ?")).toBeInTheDocument();
+    expect(within(arbeidsflate).getAllByRole("button", { name: /Tom rute/ })).toHaveLength(5);
+
+    const addisjonssjekk = screen.getByRole("note", { name: "Sjekk med addisjon" });
+    expect(addisjonssjekk).toHaveTextContent("1 + ? = 3");
+    expect(arbeidsflate).not.toContainElement(addisjonssjekk);
     expect(screen.getByRole("spinbutton")).toBeDisabled();
 
     const ruter = screen.getAllByRole("button", { name: /Tom rute/ });
@@ -49,7 +57,7 @@ describe("Subtraksjonsaktivitet", () => {
     await user.click(screen.getByRole("button", { name: "Sjekk svaret" }));
 
     expect(onSvar).toHaveBeenNthCalledWith(2, true);
-    expect(screen.getByText("1 + 2 = 3")).toBeInTheDocument();
+    expect(screen.getByRole("note", { name: "Sjekk med addisjon" })).toHaveTextContent("1 + 2 = 3");
     for (const rute of screen.getAllByRole("button", { name: /Ball|Tom rute/ })) {
       expect(rute).toBeDisabled();
     }
@@ -127,7 +135,7 @@ describe("SubtraksjonTab eksempelmodus", () => {
     act(() => jest.runAllTimers());
 
     expect(screen.getByText("3 − 1 = 2")).toBeInTheDocument();
-    expect(screen.getByText("1 + 2 = 3")).toBeInTheDocument();
+    expect(screen.getByRole("note", { name: "Sjekk med addisjon" })).toHaveTextContent("1 + 2 = 3");
     expect(screen.getByRole("button", { name: "Nytt eksempel" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nytt eksempel" }));
