@@ -1,11 +1,12 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { Oppgave } from "@/src/domene/typer";
 import { poengForOppgave } from "@/src/domene/poeng";
-import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
 import { useSvarOrkestrering } from "@/src/komponenter/useSvarOrkestrering";
+import { useOppgaverunde } from "@/src/komponenter/useOppgaverunde";
+import { RundeResultat } from "@/src/komponenter/RundeResultat";
 import { nøkkelForOppgave } from "@/src/domene/faktaStatus";
 import type { VisualiseringsType } from "@/src/domene/mønsterpakker";
 import { OppgaveRad } from "./OppgaveRad";
@@ -28,29 +29,26 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
   { oppgaver, leggTilPoeng, onNyRunde, onEnterAt, visualiseringsType, onFerdig },
   ref,
 ) {
-  const [svar, setSvar] = useState<string[]>(() => Array(oppgaver.length).fill(""));
-  const [sjekket, setSjekket] = useState<boolean[]>(() => Array(oppgaver.length).fill(false));
+  const {
+    svar,
+    sjekket,
+    alleSjekket,
+    oppdaterSvar,
+    prøvMarkerSjekket,
+    markerSjekketMange,
+    prøvIgjen,
+  } = useOppgaverunde(oppgaver.length, () => "");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const { streak, håndterEtt, håndterMange } = useSvarOrkestrering(
-    leggTilPoeng,
-    oppgaver,
-  );
+  const { streak, håndterEtt, håndterMange } = useSvarOrkestrering(leggTilPoeng);
 
   useImperativeHandle(ref, () => ({
     focusInput: (i: number) => inputRefs.current[i]?.focus(),
   }));
 
-  // Reset svar/sjekket når parent sender nye oppgaver (streak resettes av hooken)
-  useEffect(() => {
-    setSvar(Array(oppgaver.length).fill(""));
-    setSjekket(Array(oppgaver.length).fill(false));
-  }, [oppgaver]);
-
   function sjekkEtt(i: number) {
-    if (svar[i] === "" || sjekket[i]) return;
+    if (svar[i] === "" || !prøvMarkerSjekket(i)) return;
     const o = oppgaver[i];
     const erRett = Number(svar[i]) === o.svar;
-    setSjekket((prev) => oppdaterIndex(prev, i, true));
     håndterEtt({
       erRett,
       nøkkel: nøkkelForOppgave(o),
@@ -59,23 +57,19 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
   }
 
   function sjekkAlle() {
-    const nySjekket = oppgaver.map((_, i) => svar[i] !== "");
-    setSjekket(nySjekket);
+    const nye = markerSjekketMange(
+      oppgaver.flatMap((_, i) => (svar[i] === "" ? [] : [i])),
+    );
     håndterMange(
-      oppgaver.flatMap((o, i) => {
-        if (sjekket[i] || !nySjekket[i]) return [];
-        return [{
+      nye.map((i) => {
+        const o = oppgaver[i];
+        return {
           erRett: Number(svar[i]) === o.svar,
           nøkkel: nøkkelForOppgave(o),
           poengVedRett: poengForOppgave(o),
-        }];
+        };
       }),
     );
-  }
-
-  function prøvIgjen(i: number) {
-    setSvar((prev) => oppdaterIndex(prev, i, ""));
-    setSjekket((prev) => oppdaterIndex(prev, i, false));
   }
 
   function håndterEnter(i: number) {
@@ -84,10 +78,6 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
     else inputRefs.current[i + 1]?.focus();
   }
 
-  const alleSjekket =
-    oppgaver.length > 0 &&
-    sjekket.length === oppgaver.length &&
-    sjekket.every(Boolean);
   const antallRiktige = oppgaver.filter(
     (o, i) => sjekket[i] && Number(svar[i]) === o.svar,
   ).length;
@@ -101,13 +91,6 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
     <div className="flex flex-col gap-4 max-w-xl">
       <Streakvisning streak={streak} />
 
-      {alleSjekket && (
-        <p className="text-2xl font-black text-center text-green-700 mb-2">
-          {antallRiktige} / {oppgaver.length} riktige!{" "}
-          {antallRiktige === oppgaver.length ? "🎉" : "💪"}
-        </p>
-      )}
-
       {oppgaver.map((o, i) => (
         <OppgaveRad
           key={i}
@@ -120,7 +103,7 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
           }}
           autoFocus={i === 0}
           visualiseringsType={visualiseringsType}
-          onSvarEndret={(verdi) => setSvar((prev) => oppdaterIndex(prev, i, verdi))}
+          onSvarEndret={(verdi) => oppdaterSvar(i, verdi)}
           onBlur={() => sjekkEtt(i)}
           onEnter={() => håndterEnter(i)}
           onPrøvIgjen={() => prøvIgjen(i)}
@@ -135,14 +118,12 @@ const OppgaveListe = forwardRef<OppgaveListeHandle, Props>(function OppgaveListe
           Sjekk svar! 🔍
         </button>
       )}
-      {alleSjekket && (
-        <button
-          onClick={onNyRunde}
-          className="mt-2 bg-green-500 hover:bg-green-600 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 transition-colors self-start shadow"
-        >
-          Ny runde! 🎲
-        </button>
-      )}
+      <RundeResultat
+        ferdig={alleSjekket}
+        antallRiktige={antallRiktige}
+        antallOppgaver={oppgaver.length}
+        onNyRunde={onNyRunde}
+      />
     </div>
   );
 });

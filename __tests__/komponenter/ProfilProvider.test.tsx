@@ -86,7 +86,7 @@ describe("ProfilProvider", () => {
     act(() => {
       ctx.oppdater((p) => ({ ...p, poeng: 42 }));
     });
-    expect(lager.hentSync(opprettet!.id)?.poeng).toBe(42);
+    await waitFor(() => expect(lager.hentSync(opprettet!.id)?.poeng).toBe(42));
   });
 
   it("flere synkron oppdater-kall akkumulerer (ikke stale closure)", async () => {
@@ -102,7 +102,38 @@ describe("ProfilProvider", () => {
         ctx.oppdater((p) => ({ ...p, poeng: p.poeng + 1 }));
       }
     });
-    expect(lager.hentSync(id)?.poeng).toBe(5);
+    await waitFor(() => expect(lager.hentSync(id)?.poeng).toBe(5));
+  });
+
+  it("persisterer raske oppdateringer i samme rekkefølge som tilstanden", async () => {
+    const profil = lagNyProfil("Lily", "🦊");
+    const grunnlager = lagFakeLager([profil], profil.id);
+    const lager: FakeLager = {
+      ...grunnlager,
+      async lagre(oppdatert) {
+        if (oppdatert.poeng === 1) {
+          await new Promise((resolve) => setTimeout(resolve, 20));
+        }
+        await grunnlager.lagre(oppdatert);
+      },
+    };
+    let ctx: ReturnType<typeof useProfil> | undefined;
+    render(
+      <ProfilProvider lager={lager}>
+        <TestForbruker onMount={(verdi) => (ctx = verdi)} />
+      </ProfilProvider>,
+    );
+    await waitFor(() => expect(screen.queryByText("laster")).not.toBeInTheDocument());
+
+    act(() => {
+      ctx!.oppdater((p) => ({ ...p, poeng: p.poeng + 1 }));
+      ctx!.oppdater((p) => ({ ...p, poeng: p.poeng + 1 }));
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    });
+    expect(grunnlager.hentSync(profil.id)?.poeng).toBe(2);
   });
 
   it("registrerSvar akkumulerer ved batch-kall (ikke stale closure)", async () => {
@@ -118,9 +149,11 @@ describe("ProfilProvider", () => {
         ctx.registrerSvar(`fakta-${i}`, true);
       }
     });
-    const lagret = lager.hentSync(id);
-    expect(lagret?.statistikk.totaltRiktige).toBe(5);
-    expect(lagret?.faktaStatus).toHaveLength(5);
+    await waitFor(() => {
+      const lagret = lager.hentSync(id);
+      expect(lagret?.statistikk.totaltRiktige).toBe(5);
+      expect(lagret?.faktaStatus).toHaveLength(5);
+    });
   });
 
   it("slett fjerner profilen og nullstiller aktivId hvis den var aktiv", async () => {

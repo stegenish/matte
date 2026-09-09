@@ -17,6 +17,8 @@ export interface ProfilLager {
 }
 
 class LocalStorageProfilLager implements ProfilLager {
+  private skriveKø: Promise<void> = Promise.resolve();
+
   async hentAlle(): Promise<Profil[]> {
     const rå = trygtLes(PROFILER_NØKKEL);
     if (!Array.isArray(rå)) return [];
@@ -31,15 +33,19 @@ class LocalStorageProfilLager implements ProfilLager {
   }
 
   async lagre(profil: Profil): Promise<void> {
-    const alle = await this.hentAlle();
-    const utenGammel = alle.filter((p) => p.id !== profil.id);
-    trygtSkriv(PROFILER_NØKKEL, [...utenGammel, profil]);
+    return this.leggISkriveKø(async () => {
+      const alle = await this.hentAlle();
+      const utenGammel = alle.filter((p) => p.id !== profil.id);
+      trygtSkriv(PROFILER_NØKKEL, [...utenGammel, profil]);
+    });
   }
 
   async slett(id: string): Promise<void> {
-    const alle = (await this.hentAlle()).filter((p) => p.id !== id);
-    trygtSkriv(PROFILER_NØKKEL, alle);
-    if ((await this.hentAktivId()) === id) await this.settAktivId(null);
+    return this.leggISkriveKø(async () => {
+      const alle = (await this.hentAlle()).filter((p) => p.id !== id);
+      trygtSkriv(PROFILER_NØKKEL, alle);
+      if ((await this.hentAktivId()) === id) await this.settAktivId(null);
+    });
   }
 
   async hentAktivId(): Promise<string | null> {
@@ -51,6 +57,12 @@ class LocalStorageProfilLager implements ProfilLager {
     if (typeof localStorage === "undefined") return;
     if (id === null) localStorage.removeItem(AKTIV_PROFIL_NØKKEL);
     else localStorage.setItem(AKTIV_PROFIL_NØKKEL, id);
+  }
+
+  private leggISkriveKø(operasjon: () => Promise<void>): Promise<void> {
+    const resultat = this.skriveKø.then(operasjon);
+    this.skriveKø = resultat.catch(() => undefined);
+    return resultat;
   }
 }
 

@@ -4,6 +4,7 @@ import {
   lagGangerunde,
   poengForGangeOppgave,
 } from "@/src/domene/gangevariant";
+import { poengForOppgave } from "@/src/domene/poeng";
 
 describe("lagGangeOppgave", () => {
   it("klassisk: produkt = a * b", () => {
@@ -120,5 +121,12 @@ describe("poengForGangeOppgave", () => {
       poengForGangeOppgave(lagGangeOppgave(7, 8, "manglende-faktor")),
     ).toBe(2 + 1);
     expect(poengForGangeOppgave(lagGangeOppgave(7, 8, "omvendt"))).toBe(2 + 1);
+  });
+
+  it("bruker samme grunnpoeng som tilsvarende vanlig gangeoppgave", () => {
+    const gangeoppgave = lagGangeOppgave(10, 10, "klassisk");
+    expect(poengForGangeOppgave(gangeoppgave)).toBe(
+      poengForOppgave({ a: 10, b: 10, operasjon: "×", svar: 100 }),
+    );
   });
 });

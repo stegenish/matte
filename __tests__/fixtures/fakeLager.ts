@@ -9,9 +9,12 @@ export interface FakeLager extends ProfilLager {
   hentSync(id: string): Profil | undefined;
 }
 
-export function lagFakeLager(seed: Profil[] = []): FakeLager {
+export function lagFakeLager(
+  seed: Profil[] = [],
+  aktivProfilId: string | null = null,
+): FakeLager {
   let profiler: Profil[] = [...seed];
-  let aktivId: string | null = null;
+  let aktivId: string | null = aktivProfilId;
   return {
     async hentAlle() {
       return [...profiler];

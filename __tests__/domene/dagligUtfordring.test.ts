@@ -1,11 +1,13 @@
 import {
   ANTALL_DAGLIGE,
+  belønnDagligUtfordring,
   harGjortIDag,
   lagDagligUtfordring,
   markerGjortIDag,
   nøkkelTilOppgave,
 } from "@/src/domene/dagligUtfordring";
 import { lagNyProfil } from "@/src/domene/profil";
+import { FUN_FACTS } from "@/src/domene/titler";
 
 describe("nøkkelTilOppgave", () => {
   it("parser pluss", () => {
@@ -79,5 +81,30 @@ describe("harGjortIDag / markerGjortIDag", () => {
     const profil = lagNyProfil("Lily", "🦊");
     profil.dagligUtfordringSistGjort = "2020-01-01";
     expect(harGjortIDag(profil)).toBe(false);
+  });
+
+  it("gir daglig bonus bare én gang samme dag", () => {
+    const dato = new Date("2026-09-09T12:00:00Z");
+    const profil = lagNyProfil("Lily", "🦊");
+
+    const første = belønnDagligUtfordring(profil, dato);
+    const andre = belønnDagligUtfordring(første.profil, dato);
+
+    expect(første.bonusGitt).toBe(true);
+    expect(andre.bonusGitt).toBe(false);
+    expect(andre.profil.poeng).toBe(første.profil.poeng);
+  });
+
+  it("velger første us samlede fun fact uten duplikater", () => {
+    const profil = lagNyProfil("Lily", "🦊");
+    profil.funFactsSamlet = [FUN_FACTS[1]];
+
+    const resultat = belønnDagligUtfordring(
+      profil,
+      new Date("2026-09-09T12:00:00Z"),
+    );
+
+    expect(resultat.nyFunFact).toBe(FUN_FACTS[0]);
+    expect(new Set(resultat.profil.funFactsSamlet).size).toBe(2);
   });
 });

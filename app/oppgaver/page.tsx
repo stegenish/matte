@@ -3,19 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import OppgaveListe from "./OppgaveListe";
+import { OppgaverTab } from "./OppgaverTab";
 import { PakkerTab } from "./PakkerTab";
 import { TallTab } from "./TallTab";
 import { GangeTab } from "./GangeTab";
-import type { Oppgave, Operasjon } from "@/src/domene/typer";
-import { lagOppgaver, type Innstillinger } from "@/src/domene/oppgaver";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
 import { Tittelvisning } from "@/src/komponenter/Tittelvisning";
 import { Tittelfeiring } from "@/src/komponenter/Tittelfeiring";
 import { Maskot } from "@/src/komponenter/Maskot";
 import { BossKamp } from "@/src/komponenter/BossKamp";
 import { Sesjonspause } from "@/src/komponenter/Sesjonspause";
-import { nivåForPoeng, tårnEtasjeForIndex, type Nivå } from "@/src/domene/titler";
+import { nivåForPoeng, type Nivå } from "@/src/domene/titler";
+import { giPoeng } from "@/src/domene/profil";
 import { spillOpprykk } from "@/src/lyd";
 
 const SESJONSLENGDE_MS = 5 * 60 * 1000; // 5 min
@@ -24,9 +23,6 @@ const SESJONSLENGDE_MS = 5 * 60 * 1000; // 5 min
 
 type TabId = "oppgaver" | "pakker" | "tall" | "gange";
 
-const SIFFER_VALG = [1, 2, 3];
-const ANTALL_VALG = [5, 10, 15, 20];
-const ALLE_OPERASJONER: Operasjon[] = ["+", "-", "×", "÷"];
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "oppgaver", label: "Oppgaver" },
@@ -59,181 +55,6 @@ function TabBar({
           {tab.label}
         </button>
       ))}
-    </div>
-  );
-}
-
-// ── Gangetabell ───────────────────────────────────────────────────────────────
-
-const TALL = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-function Gangetabell() {
-  return (
-    <div className="shrink-0 overflow-auto">
-      <h2 className="text-lg font-black text-gray-600 mb-2 text-center">Gangetabell</h2>
-      <table className="border-collapse text-center text-base font-bold">
-        <thead>
-          <tr>
-            <th className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">×</th>
-            {TALL.map((n) => (
-              <th key={n} className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">
-                {n}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {TALL.map((a) => (
-            <tr key={a}>
-              <th className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">{a}</th>
-              {TALL.map((b) => {
-                const mørkRad = a % 2 === 0;
-                const mørkKol = b % 2 === 0;
-                const bg = mørkRad && mørkKol ? "bg-yellow-100"
-                         : mørkRad || mørkKol ? "bg-yellow-50"
-                         : "bg-white";
-                return (
-                  <td key={b} className={`w-12 h-12 border border-yellow-200 text-gray-700 hover:bg-orange-100 ${bg}`}>
-                    {a * b}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// ── OppgaverTab ───────────────────────────────────────────────────────────────
-
-function OppgaverTab({ leggTilPoeng }: { leggTilPoeng: (p: number) => void }) {
-  const [innstillinger, setInnstillinger] = useState<Innstillinger>({
-    sifrerA: 1,
-    sifrerB: 1,
-    operasjoner: ["+"],
-    antallOppgaver: 5,
-  });
-  const [oppgaver, setOppgaver] = useState<Oppgave[]>([]);
-
-  function genererOppgaver() {
-    setOppgaver(lagOppgaver(innstillinger));
-  }
-
-  function toggleOperasjon(op: Operasjon) {
-    setInnstillinger((prev) => {
-      const harAllerede = prev.operasjoner.includes(op);
-      // må ha minst én operasjon
-      if (harAllerede && prev.operasjoner.length === 1) return prev;
-      return {
-        ...prev,
-        operasjoner: harAllerede
-          ? prev.operasjoner.filter((o) => o !== op)
-          : [...prev.operasjoner, op],
-      };
-    });
-  }
-
-  return (
-    <div className="flex flex-col md:flex-row flex-1">
-      {/* Venstre: innstillinger */}
-      <aside className="w-full md:w-72 p-6 border-b-2 md:border-b-0 md:border-r-2 border-yellow-300 flex flex-col gap-6">
-        <h2 className="text-2xl font-black text-gray-700">Innstillinger</h2>
-
-        {(["sifrerA", "sifrerB"] as const).map((felt, idx) => (
-          <div key={felt}>
-            <p className="font-bold text-gray-600 mb-2">
-              Sifre i {idx === 0 ? "1." : "2."} tall
-            </p>
-            <div className="flex gap-2">
-              {SIFFER_VALG.map((n) => (
-                <button
-                  key={n}
-                  onClick={() =>
-                    setInnstillinger((p) => ({ ...p, [felt]: n }))
-                  }
-                  className={`px-4 py-2 rounded-xl font-bold border-2 transition-colors ${
-                    innstillinger[felt] === n
-                      ? "bg-green-400 border-green-600 text-white"
-                      : "bg-white border-gray-300 text-gray-600 hover:border-green-400"
-                  }`}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-
-        <div>
-          <p className="font-bold text-gray-600 mb-2">Regnearter</p>
-          <div className="flex flex-wrap gap-2">
-            {ALLE_OPERASJONER.map((op) => (
-              <button
-                key={op}
-                onClick={() => toggleOperasjon(op)}
-                className={`px-4 py-2 rounded-xl font-bold text-xl border-2 transition-colors ${
-                  innstillinger.operasjoner.includes(op)
-                    ? "bg-purple-400 border-purple-600 text-white"
-                    : "bg-white border-gray-300 text-gray-600 hover:border-purple-400"
-                }`}
-              >
-                {op}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className="font-bold text-gray-600 mb-2">Antall oppgaver</p>
-          <div className="flex flex-wrap gap-2">
-            {ANTALL_VALG.map((n) => (
-              <button
-                key={n}
-                onClick={() =>
-                  setInnstillinger((p) => ({ ...p, antallOppgaver: n }))
-                }
-                className={`px-4 py-2 rounded-xl font-bold border-2 transition-colors ${
-                  innstillinger.antallOppgaver === n
-                    ? "bg-blue-400 border-blue-600 text-white"
-                    : "bg-white border-gray-300 text-gray-600 hover:border-blue-400"
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <button
-          onClick={genererOppgaver}
-          className="mt-auto bg-green-500 hover:bg-green-600 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 transition-colors shadow"
-        >
-          Generer! 🎲
-        </button>
-      </aside>
-
-      {/* Høyre: oppgaver + gangetabell */}
-      <section className="flex-1 p-6 overflow-y-auto flex gap-8 flex-wrap">
-        <div className="flex-1">
-          {oppgaver.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4 text-gray-400">
-              <p className="text-6xl">🧮</p>
-              <p className="text-xl font-bold">
-                Trykk &quot;Generer!&quot; for å starte
-              </p>
-            </div>
-          ) : (
-            <OppgaveListe
-              oppgaver={oppgaver}
-              leggTilPoeng={leggTilPoeng}
-              onNyRunde={genererOppgaver}
-            />
-          )}
-        </div>
-        <Gangetabell />
-      </section>
     </div>
   );
 }
@@ -304,16 +125,7 @@ export default function OppgaverSide() {
   }
 
   function leggTilPoeng(p: number) {
-    oppdater((forrige) => {
-      const nyttPoeng = forrige.poeng + p;
-      const nyttNivå = nivåForPoeng(nyttPoeng);
-      return {
-        ...forrige,
-        poeng: nyttPoeng,
-        tittelIndex: nyttNivå.index,
-        tårnEtasje: tårnEtasjeForIndex(nyttNivå.index),
-      };
-    });
+    oppdater((forrige) => giPoeng(forrige, p));
   }
 
   return (

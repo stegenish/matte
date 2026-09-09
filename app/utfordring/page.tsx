@@ -7,11 +7,11 @@ import OppgaveListe from "../oppgaver/OppgaveListe";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
 import {
   DAGLIG_BONUS,
+  belønnDagligUtfordring,
   harGjortIDag,
   lagDagligUtfordring,
-  markerGjortIDag,
 } from "@/src/domene/dagligUtfordring";
-import { FUN_FACTS, nivåForPoeng, tårnEtasjeForIndex } from "@/src/domene/titler";
+import { giPoeng } from "@/src/domene/profil";
 
 export default function UtfordringSide() {
   const router = useRouter();
@@ -42,47 +42,18 @@ export default function UtfordringSide() {
   }
 
   const allereGjort = harGjortIDag(aktivProfil);
+  const profil = aktivProfil;
 
   function leggTilPoeng(p: number) {
-    oppdater((forrige) => {
-      const nyttPoeng = forrige.poeng + p;
-      const nyttNivå = nivåForPoeng(nyttPoeng);
-      return {
-        ...forrige,
-        poeng: nyttPoeng,
-        tittelIndex: nyttNivå.index,
-        tårnEtasje: tårnEtasjeForIndex(nyttNivå.index),
-      };
-    });
+    oppdater((forrige) => giPoeng(forrige, p));
   }
 
   function avslutt() {
     if (bonusGitt) return;
-    setBonusGitt(true);
-    // Beregn ny fun fact basert på dagens profil-snapshot for UI-feedback
-    const nesteFakta = aktivProfil
-      ? FUN_FACTS[aktivProfil.funFactsSamlet.length]
-      : null;
-    if (nesteFakta) setNyFunFact(nesteFakta);
-    oppdater((forrige) => {
-      let etter = markerGjortIDag(forrige);
-      const nyttPoeng = etter.poeng + DAGLIG_BONUS;
-      const nyttNivå = nivåForPoeng(nyttPoeng);
-      etter = {
-        ...etter,
-        poeng: nyttPoeng,
-        tittelIndex: nyttNivå.index,
-        tårnEtasje: tårnEtasjeForIndex(nyttNivå.index),
-      };
-      const nyFakta = FUN_FACTS[forrige.funFactsSamlet.length];
-      if (nyFakta && !forrige.funFactsSamlet.includes(nyFakta)) {
-        etter = {
-          ...etter,
-          funFactsSamlet: [...etter.funFactsSamlet, nyFakta],
-        };
-      }
-      return etter;
-    });
+    const forhåndsvisning = belønnDagligUtfordring(profil);
+    setBonusGitt(forhåndsvisning.bonusGitt);
+    setNyFunFact(forhåndsvisning.nyFunFact);
+    oppdater((forrige) => belønnDagligUtfordring(forrige).profil);
   }
 
   return (
@@ -121,6 +92,7 @@ export default function UtfordringSide() {
         )}
 
         <OppgaveListe
+          key={profil.id}
           oppgaver={oppgaver}
           leggTilPoeng={leggTilPoeng}
           onNyRunde={() => router.push("/")}

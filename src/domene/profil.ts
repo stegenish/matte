@@ -29,8 +29,6 @@ export interface Profil {
   avatar: string;
   tilbehør: string[];
   poeng: number;
-  tittelIndex: number;
-  tårnEtasje: number;
   sistInnstillinger: Innstillinger | null;
   faktaStatus: FaktaStatus[];
   statistikk: ProfilStatistikk;
@@ -48,8 +46,6 @@ export function lagNyProfil(navn: string, avatar: string): Profil {
     avatar,
     tilbehør: [],
     poeng: 0,
-    tittelIndex: 0,
-    tårnEtasje: 0,
     sistInnstillinger: null,
     faktaStatus: [],
     statistikk: {
@@ -63,6 +59,10 @@ export function lagNyProfil(navn: string, avatar: string): Profil {
     lydAv: false,
     lynRekord: 0,
   };
+}
+
+export function giPoeng(profil: Profil, poeng: number): Profil {
+  return { ...profil, poeng: profil.poeng + poeng };
 }
 
 // Migrasjons-register: hver oppføring tar data på versjon N og returnerer data på versjon N+1.
@@ -104,6 +104,7 @@ export function fyllInnDefaults(rådata: unknown): Profil | null {
     høyesteStreak: 0,
     øvingstyperBrukt: [],
   };
+  const poeng = typeof r.poeng === "number" ? r.poeng : 0;
 
   return {
     schemaVersjon: PROFIL_SCHEMA_VERSJON,
@@ -111,9 +112,7 @@ export function fyllInnDefaults(rådata: unknown): Profil | null {
     navn: r.navn,
     avatar: typeof r.avatar === "string" ? r.avatar : STANDARD_AVATARER[0],
     tilbehør: Array.isArray(r.tilbehør) ? r.tilbehør : [],
-    poeng: typeof r.poeng === "number" ? r.poeng : 0,
-    tittelIndex: typeof r.tittelIndex === "number" ? r.tittelIndex : 0,
-    tårnEtasje: typeof r.tårnEtasje === "number" ? r.tårnEtasje : 0,
+    poeng,
     sistInnstillinger: (r.sistInnstillinger as Innstillinger | null) ?? null,
     faktaStatus: Array.isArray(r.faktaStatus) ? r.faktaStatus : [],
     statistikk: { ...standardStatistikk, ...(r.statistikk ?? {}) },

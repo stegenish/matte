@@ -6,11 +6,9 @@ export function nyProfil(navn = "Lily", avatar = "🦊"): Profil {
   return lagNyProfil(navn, avatar);
 }
 
-export function profilMedPoeng(poeng: number, tittelIndex = 0, tårnEtasje = 0): Profil {
+export function profilMedPoeng(poeng: number): Profil {
   return {
     ...nyProfil(),
     poeng,
-    tittelIndex,
-    tårnEtasje,
   };
 }

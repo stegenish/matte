@@ -45,11 +45,13 @@ interface Props {
 export function ProfilProvider({ children, lager = standardLager }: Props) {
   const [klar, setKlar] = useState(false);
   const [alleProfiler, setAlleProfiler] = useState<Profil[]>([]);
+  const alleProfilerRef = useRef<Profil[]>([]);
   const [aktivId, setAktivIdState] = useState<string | null>(null);
   // Ref holder synkronisert aktivId-verdi. Brukes inni setAlleProfiler-callbacks
   // som ellers ville sett stale closure-verdi når flere oppdateringer kommer
   // tett etter hverandre (f.eks. opprett+oppdater i samme act-blokk i tester).
   const aktivIdRef = useRef<string | null>(null);
+  const persistKøRef = useRef<Promise<void>>(Promise.resolve());
 
   function setAktivId(id: string | null) {
     aktivIdRef.current = id;
@@ -61,6 +63,7 @@ export function ProfilProvider({ children, lager = standardLager }: Props) {
     Promise.all([lager.hentAlle(), lager.hentAktivId()])
       .then(([profiler, lastetAktivId]) => {
         if (avbrutt) return;
+        alleProfilerRef.current = profiler;
         setAlleProfiler(profiler);
         setAktivId(lastetAktivId);
         setKlar(true);
@@ -83,52 +86,61 @@ export function ProfilProvider({ children, lager = standardLager }: Props) {
   }, [aktivProfil?.lydAv]);
 
   // Fire-and-forget lager-skriving. Logger feil men blokkerer ikke UI.
-  function persisterStille(løfte: Promise<unknown>, kontekst: string): void {
-    løfte.catch((err) => console.error(`Lagring feilet (${kontekst}):`, err));
+  function persisterStille(
+    operasjon: () => Promise<unknown>,
+    kontekst: string,
+  ): void {
+    const resultat = persistKøRef.current.then(operasjon);
+    persistKøRef.current = resultat
+      .then(() => undefined)
+      .catch((err) => {
+        console.error(`Lagring feilet (${kontekst}):`, err);
+      });
   }
 
   function velg(id: string) {
-    persisterStille(lager.settAktivId(id), "velg");
+    persisterStille(() => lager.settAktivId(id), "velg");
     setAktivId(id);
   }
 
   function opprett(navn: string, avatar: string): Profil {
     const ny = lagNyProfil(navn, avatar);
-    persisterStille(lager.lagre(ny), "opprett.lagre");
-    persisterStille(lager.settAktivId(ny.id), "opprett.settAktiv");
-    setAlleProfiler((prev) => [...prev, ny]);
+    persisterStille(() => lager.lagre(ny), "opprett.lagre");
+    persisterStille(() => lager.settAktivId(ny.id), "opprett.settAktiv");
+    erstattProfiler([...alleProfilerRef.current, ny]);
     setAktivId(ny.id);
     return ny;
   }
 
   function loggUt() {
-    persisterStille(lager.settAktivId(null), "loggUt");
+    persisterStille(() => lager.settAktivId(null), "loggUt");
     setAktivId(null);
   }
 
   function oppdater(fn: ProfilOppdatering) {
     const id = aktivIdRef.current;
     if (!id) return;
-    setAlleProfiler((prev) => {
-      let oppdatertProfil: Profil | undefined;
-      const ny = prev.map((p) => {
-        if (p.id !== id) return p;
-        oppdatertProfil = fn(p);
-        return oppdatertProfil;
-      });
-      // Persisterer her i stedet for utenfor settere så vi alltid får siste verdi.
-      // I React Strict Mode kalles setteren to ganger, så lager.lagre kalles to ganger
-      // med samme verdi — idempotent for localStorage. Deduplisering kan legges til
-      // i lager-implementasjonen senere hvis det blir et problem mot Supabase.
-      if (oppdatertProfil) persisterStille(lager.lagre(oppdatertProfil), "oppdater");
-      return ny;
+    let oppdatertProfil: Profil | undefined;
+    const profiler = alleProfilerRef.current.map((profil) => {
+      if (profil.id !== id) return profil;
+      oppdatertProfil = fn(profil);
+      return oppdatertProfil;
     });
+    if (!oppdatertProfil) return;
+    const profilÅLagre = oppdatertProfil;
+    erstattProfiler(profiler);
+    persisterStille(() => lager.lagre(profilÅLagre), "oppdater");
   }
 
   function slett(id: string) {
-    persisterStille(lager.slett(id), "slett");
-    setAlleProfiler((prev) => prev.filter((p) => p.id !== id));
+    persisterStille(() => lager.slett(id), "slett");
+    erstattProfiler(alleProfilerRef.current.filter((p) => p.id !== id));
     if (aktivIdRef.current === id) setAktivId(null);
+  }
+
+  function erstattProfiler(profiler: Profil[]) {
+    alleProfilerRef.current = profiler;
+    setAlleProfiler(profiler);
   }
 
   function registrerSvar(oppgaveNøkkel: string | null, riktig: boolean) {

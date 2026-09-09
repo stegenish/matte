@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useProfil } from "@/src/komponenter/ProfilProvider";
 import { nøkkelForOppgave } from "@/src/domene/faktaStatus";
+import { giPoeng } from "@/src/domene/profil";
 
 interface Props {
   tabeller: number[];
@@ -63,11 +64,7 @@ export function LynRunde({ tabeller, onAvslutt, leggTilPoeng }: Props) {
     if (!ferdig) return;
     oppdater((forrige) => {
       if (riktige <= forrige.lynRekord) return forrige; // ingen ny rekord
-      return {
-        ...forrige,
-        lynRekord: riktige,
-        poeng: forrige.poeng + REKORD_BONUS,
-      };
+      return giPoeng({ ...forrige, lynRekord: riktige }, REKORD_BONUS);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ferdig]);

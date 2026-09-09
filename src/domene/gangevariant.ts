@@ -1,3 +1,5 @@
+import { poengForOppgave } from "./poeng";
+
 export type GangeVariant =
   | "klassisk"           // 7 × 8 = ?
   | "manglende-faktor"   // ? × 8 = 56
@@ -11,17 +13,40 @@ export const ALLE_VARIANTER: GangeVariant[] = [
   "sant-usant",
 ];
 
-export interface GangeOppgave {
-  variant: GangeVariant;
+interface GangeOppgaveGrunnlag {
   a: number;
   b: number;
   produkt: number;
-  // For "manglende-faktor": hvilken side mangler (a eller b)
-  manglerSide?: "a" | "b";
-  // For "sant-usant": hva som påstås, og om det stemmer
-  påstand?: number;
-  påstandRiktig?: boolean;
 }
+
+export type GangeOppgave =
+  | (GangeOppgaveGrunnlag & {
+      variant: "klassisk";
+      manglerSide?: never;
+      påstand?: never;
+      påstandRiktig?: never;
+    })
+  | (GangeOppgaveGrunnlag & {
+      variant: "manglende-faktor";
+      manglerSide: "a" | "b";
+      påstand?: never;
+      påstandRiktig?: never;
+    })
+  | (GangeOppgaveGrunnlag & {
+      variant: "omvendt";
+      manglerSide?: never;
+      påstand?: never;
+      påstandRiktig?: never;
+    })
+  | (GangeOppgaveGrunnlag & {
+      variant: "sant-usant";
+      manglerSide?: never;
+      påstand: number;
+      påstandRiktig: boolean;
+    });
+
+export type SantUsantOppgave = Extract<GangeOppgave, { variant: "sant-usant" }>;
+export type GangeInputOppgave = Exclude<GangeOppgave, { variant: "sant-usant" }>;
 
 export interface GangetabellInnstillinger {
   tabeller: number[];        // hvilke gangetabell-rader, f.eks. [2, 5, 10]
@@ -32,11 +57,16 @@ export interface GangetabellInnstillinger {
 // Hva er det riktige svaret for en variant-oppgave?
 // For sant-usant er "svaret" om påstanden er riktig (1 = sant, 0 = usant).
 export function fasitFor(o: GangeOppgave): number {
-  if (o.variant === "sant-usant") return o.påstandRiktig ? 1 : 0;
-  if (o.variant === "klassisk") return o.produkt;
-  if (o.variant === "manglende-faktor") return o.manglerSide === "a" ? o.a : o.b;
-  // omvendt: vi spør om en av faktorene gitt produktet og den andre
-  return o.a;
+  switch (o.variant) {
+    case "sant-usant":
+      return o.påstandRiktig ? 1 : 0;
+    case "klassisk":
+      return o.produkt;
+    case "manglende-faktor":
+      return o.manglerSide === "a" ? o.a : o.b;
+    case "omvendt":
+      return o.a;
+  }
 }
 
 // Genererer en variant-oppgave for gitt a, b og variant.
@@ -95,6 +125,10 @@ export function lagGangerunde(
 // vanlig ganging (sifre + 1), sant-usant gir 1 poeng (enklere/raskere).
 export function poengForGangeOppgave(o: GangeOppgave): number {
   if (o.variant === "sant-usant") return 1;
-  const sifre = Math.min(String(o.produkt).length, 6);
-  return sifre + 1;
+  return poengForOppgave({
+    a: o.a,
+    b: o.b,
+    operasjon: "×",
+    svar: o.produkt,
+  });
 }

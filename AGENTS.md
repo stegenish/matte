@@ -6,7 +6,7 @@ Startsiden ønsker barna velkommen og har en startknapp til oppgavesiden.
 Oppgavesiden lar brukeren justere vanskelighetsgrad og generere matteoppgaver.
 
 ## Kodebase-oversikt
-Les `README.agent` for en fullstendig orientering om arkitektur, komponenter, typer, logikk og kjente bugs — uten å måtte lese all kildekode.
+Les `README.agent.md` for en fullstendig orientering om arkitektur, komponenter, typer, logikk og kjente bugs — uten å måtte lese all kildekode.
 
 ## Tech stack
 - Next.js (App Router) with React

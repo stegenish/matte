@@ -2,14 +2,22 @@ import { tallTilNavn } from "./tallNavn";
 
 export type TallModus = "lese" | "skrive";
 
-export interface TallOppgave {
-  modus: TallModus;
+interface TallOppgaveGrunnlag {
   tall: number;
   navn: string;
-  // For "lese": fire alternativer (ett riktig + tre distraktorer), shufflet.
-  // For "skrive": ikke brukt.
-  alternativer?: number[];
 }
+
+export interface LeseTallOppgave extends TallOppgaveGrunnlag {
+  modus: "lese";
+  alternativer: number[];
+}
+
+export interface SkriveTallOppgave extends TallOppgaveGrunnlag {
+  modus: "skrive";
+  alternativer?: never;
+}
+
+export type TallOppgave = LeseTallOppgave | SkriveTallOppgave;
 
 export interface TallPakke {
   id: string;
@@ -75,7 +83,7 @@ function stokk<T>(arr: T[]): T[] {
   return a;
 }
 
-function lagLeseOppgave(tall: number): TallOppgave {
+function lagLeseOppgave(tall: number): LeseTallOppgave {
   const distraktorer = lagDistraktorer(tall, 3);
   return {
     modus: "lese",
@@ -85,7 +93,7 @@ function lagLeseOppgave(tall: number): TallOppgave {
   };
 }
 
-function lagSkriveOppgave(tall: number): TallOppgave {
+function lagSkriveOppgave(tall: number): SkriveTallOppgave {
   return {
     modus: "skrive",
     tall,

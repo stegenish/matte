@@ -25,8 +25,6 @@ export interface SvarOrkestrering {
   // Registrer flere svar i sekvens (sjekkAlle-stil) — bevarer streak-akkumulering
   // gjennom løkken uten stale-closure-bugs
   håndterMange: (info: SvarInfo[]) => void;
-  // Nullstill streaken
-  nullstill: () => void;
 }
 
 // Felles streak- og poeng-orkestrering for alle oppgavetyper.
@@ -37,18 +35,9 @@ export interface SvarOrkestrering {
 // kalles én gang per brukerklikk, så closure-tilstand er ikke stale.
 export function useSvarOrkestrering(
   leggTilPoeng: (p: number) => void,
-  oppgaverRef: unknown,
 ): SvarOrkestrering {
   const [streak, setStreak] = useState<StreakTilstand>(nyStreak);
   const { registrerSvar } = useProfil();
-
-  // Reset streak når oppgaver-referansen endres (ny runde) — React 19-mønsteret
-  // for å reagere på prop-endringer uten cascading useEffect-renders.
-  const [sistOppgaverRef, setSistOppgaverRef] = useState<unknown>(oppgaverRef);
-  if (sistOppgaverRef !== oppgaverRef) {
-    setStreak(nyStreak());
-    setSistOppgaverRef(oppgaverRef);
-  }
 
   function håndterEtt(info: SvarInfo) {
     registrerSvar(info.nøkkel, info.erRett);
@@ -76,9 +65,5 @@ export function useSvarOrkestrering(
     setStreak(tilstand);
   }
 
-  function nullstill() {
-    setStreak(nyStreak());
-  }
-
-  return { streak, håndterEtt, håndterMange, nullstill };
+  return { streak, håndterEtt, håndterMange };
 }

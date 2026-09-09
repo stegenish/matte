@@ -1,6 +1,8 @@
 import type { Oppgave, Operasjon } from "./typer";
 import type { Profil } from "./profil";
+import { giPoeng } from "./profil";
 import { vanskelighetsskår } from "./faktaStatus";
+import { FUN_FACTS } from "./titler";
 
 export const ANTALL_DAGLIGE = 5;
 export const DAGLIG_BONUS = 15;
@@ -51,13 +53,43 @@ export function lagDagligUtfordring(profil: Profil): Oppgave[] {
 }
 
 function isoDato(dato: Date = new Date()): string {
-  return dato.toISOString().slice(0, 10); // YYYY-MM-DD
+  const år = dato.getFullYear();
+  const måned = String(dato.getMonth() + 1).padStart(2, "0");
+  const dag = String(dato.getDate()).padStart(2, "0");
+  return `${år}-${måned}-${dag}`;
 }
 
-export function harGjortIDag(profil: Profil): boolean {
-  return profil.dagligUtfordringSistGjort === isoDato();
+export function harGjortIDag(profil: Profil, dato: Date = new Date()): boolean {
+  return profil.dagligUtfordringSistGjort === isoDato(dato);
 }
 
-export function markerGjortIDag(profil: Profil): Profil {
-  return { ...profil, dagligUtfordringSistGjort: isoDato() };
+export function markerGjortIDag(profil: Profil, dato: Date = new Date()): Profil {
+  return { ...profil, dagligUtfordringSistGjort: isoDato(dato) };
+}
+
+export interface DagligBelønning {
+  profil: Profil;
+  bonusGitt: boolean;
+  nyFunFact: string | null;
+}
+
+export function belønnDagligUtfordring(
+  profil: Profil,
+  dato: Date = new Date(),
+): DagligBelønning {
+  if (harGjortIDag(profil, dato)) {
+    return { profil, bonusGitt: false, nyFunFact: null };
+  }
+
+  const nyFunFact = FUN_FACTS.find(
+    (fakta) => !profil.funFactsSamlet.includes(fakta),
+  ) ?? null;
+  const medFakta = nyFunFact
+    ? { ...profil, funFactsSamlet: [...profil.funFactsSamlet, nyFunFact] }
+    : profil;
+  return {
+    profil: giPoeng(markerGjortIDag(medFakta, dato), DAGLIG_BONUS),
+    bonusGitt: true,
+    nyFunFact,
+  };
 }

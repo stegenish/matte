@@ -1,5 +1,6 @@
 import {
   fyllInnDefaults,
+  giPoeng,
   lagNyProfil,
   migrerProfilData,
   PROFIL_SCHEMA_VERSJON,
@@ -12,8 +13,6 @@ describe("lagNyProfil", () => {
     expect(p.navn).toBe("Lily");
     expect(p.avatar).toBe("🦊");
     expect(p.poeng).toBe(0);
-    expect(p.tittelIndex).toBe(0);
-    expect(p.tårnEtasje).toBe(0);
     expect(p.tilbehør).toEqual([]);
     expect(p.faktaStatus).toEqual([]);
     expect(p.funFactsSamlet).toEqual([]);
@@ -37,6 +36,16 @@ describe("lagNyProfil", () => {
   });
 });
 
+describe("giPoeng", () => {
+  it("oppdaterer poeng uten å lagre avledet progresjon", () => {
+    const profil = giPoeng(lagNyProfil("Lily", "🦊"), 500);
+
+    expect(profil.poeng).toBe(500);
+    expect("tittelIndex" in profil).toBe(false);
+    expect("tårnEtasje" in profil).toBe(false);
+  });
+});
+
 describe("fyllInnDefaults", () => {
   it("returnerer null for ikke-objekt eller manglende id/navn", () => {
     expect(fyllInnDefaults(null)).toBeNull();
@@ -50,7 +59,6 @@ describe("fyllInnDefaults", () => {
     const p = fyllInnDefaults({ id: "abc", navn: "Lily" });
     expect(p).not.toBeNull();
     expect(p?.poeng).toBe(0);
-    expect(p?.tittelIndex).toBe(0);
     expect(p?.avatar).toBe(STANDARD_AVATARER[0]);
     expect(p?.statistikk.totaltRiktige).toBe(0);
   });
@@ -61,11 +69,21 @@ describe("fyllInnDefaults", () => {
       navn: "Lily",
       avatar: "🦄",
       poeng: 42,
-      tittelIndex: 3,
     });
     expect(p?.poeng).toBe(42);
-    expect(p?.tittelIndex).toBe(3);
     expect(p?.avatar).toBe("🦄");
+  });
+
+  it("ignorerer gammel avledet progresjon ved lasting", () => {
+    const p = fyllInnDefaults({
+      id: "abc",
+      navn: "Lily",
+      poeng: 500,
+      tittelIndex: 0,
+      tårnEtasje: 0,
+    });
+    expect(p && "tittelIndex" in p).toBe(false);
+    expect(p && "tårnEtasje" in p).toBe(false);
   });
 
   it("fyller inn delvis statistikk-objekt", () => {

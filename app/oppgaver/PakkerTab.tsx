@@ -8,6 +8,7 @@ import {
   lagEgenPakke,
   type Mønsterpakke,
 } from "@/src/domene/mønsterpakker";
+import { useGenerertRunde } from "@/src/komponenter/useOppgaverunde";
 
 interface Props {
   leggTilPoeng: (p: number) => void;
@@ -15,17 +16,18 @@ interface Props {
 
 export function PakkerTab({ leggTilPoeng }: Props) {
   const [valgtPakke, setValgtPakke] = useState<Mønsterpakke | null>(null);
-  const [oppgaver, setOppgaver] = useState<Oppgave[]>([]);
+  const { runde, startRunde } = useGenerertRunde<Oppgave>();
+  const { id: rundeId, oppgaver } = runde;
   const [viserEgenForm, setViserEgenForm] = useState(false);
 
   function velgPakke(pakke: Mønsterpakke) {
     setValgtPakke(pakke);
-    setOppgaver(pakke.generer());
+    startRunde(pakke.generer());
     setViserEgenForm(false);
   }
 
   function nyRunde() {
-    if (valgtPakke) setOppgaver(valgtPakke.generer());
+    if (valgtPakke) startRunde(valgtPakke.generer());
   }
 
   return (
@@ -70,6 +72,7 @@ export function PakkerTab({ leggTilPoeng }: Props) {
               {valgtPakke.navn}
             </h3>
             <OppgaveListe
+              key={rundeId}
               oppgaver={oppgaver}
               leggTilPoeng={leggTilPoeng}
               onNyRunde={nyRunde}

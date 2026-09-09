@@ -1,155 +1,86 @@
-# README.agent — Matteapp
+# Matteapp — agentoversikt
 
-Rask orientering for agenter. Les denne i stedet for å utforske kildekoden fra scratch.
+Denne filen beskriver hvor ansvar ligger og hvilke regler som må bevares. Les den før du endrer kode, og åpne deretter bare filene som eier området du skal arbeide med.
 
----
+## Produkt
 
-## Hva er dette?
+Matteapp er en norsk, barnevennlig matematikkapp for Lineus, Lily og Kian. Brukeren velger en lokal profil, løser oppgaver og bygger progresjon gjennom poeng, titler og et mattetårn.
 
-En matteapp for tre barn: **Lineus**, **Lily** og **Kian**. Barnevennlig design med Comic Sans, store knapper, emojis og fargerike tilbakemeldinger. Norsk UI.
+Rutene er:
 
-- **Startside:** `app/page.tsx` — hilsen + "Start!"-knapp til `/oppgaver`
-- **Oppgaveside:** `app/oppgaver/page.tsx` — hoved-app med tabs og poengsum
+- `app/page.tsx`: profilvalg, velkomst, mattetårn og dagens utfordring.
+- `app/oppgaver/page.tsx`: skall for oppgavefanene, profilhandlinger og feiringer.
+- `app/utfordring/page.tsx`: dagens personlige utfordring.
 
----
+## Ansvarsgrenser
 
-## Arkitektur
-
-```
-app/page.tsx                    Startside (landing)
-app/oppgaver/page.tsx           Hoved-app (OppgaverSide)
-app/oppgaver/OppgaveListe.tsx   Komponent for oppgaveliste
-app/MatteOppgave.tsx            IKKE I BRUK — gammel prototype
-app/layout.tsx                  Root layout (fonts, metadata)
-app/globals.css                 Tailwind v4 setup
-```
-
----
-
-## Tabs
-
-`OppgaverSide` har tre tabs (`TabId = "oppgaver" | "lily" | "test"`):
-
-### Tab: Oppgaver
-Bruker velger innstillinger og genererer oppgaver.
-
-**Innstillinger:**
-- `sifrerA` / `sifrerB`: 1–3 sifre i hvert tall
-- `operasjoner`: en eller flere av `+`, `-`, `×`, `÷`
-- `antallOppgaver`: 5, 10, 15 eller 20
-
-**Visning:** Innstillinger-sidebar til venstre, `<OppgaveListe>` + Gangetabell (10×10) til høyre.
-
-### Tab: Lily
-Fastdefinerte oppgaver tilpasset Lily:
-- **LILY_PLUSS**: 20 oppgaver — tall som slutter på 9 (+1) og 8 (+2): `[9+1, 19+1, …, 8+2, 18+2, …]`
-- **LILY_MINUS**: 20 oppgaver — tilsvarende subtraksjon: `[10−1, 20−1, …, 10−2, …]`
-- To `<OppgaveListe>`-komponenter side-by-side med Enter-navigering mellom dem via `useRef<OppgaveListeHandle>`.
-
-### Tab: Test
-Tom stub (`<div />`). Ikke implementert.
-
----
-
-## Nøkkeltyper
-
-```typescript
-// Fra OppgaveListe.tsx (eksportert)
-type Operasjon = "+" | "-" | "×" | "÷";
-
-interface Oppgave {
-  a: number;
-  b: number;
-  operasjon: Operasjon;
-  svar: number;
-}
-
-interface OppgaveListeHandle {
-  focusInput: (i: number) => void;  // ForwardRef-handle
-}
-
-// Fra page.tsx
-interface Innstillinger {
-  sifrerA: number;
-  sifrerB: number;
-  operasjoner: Operasjon[];
-  antallOppgaver: number;
-}
+```text
+app/                         Ruter og sammensetting av funksjoner
+app/oppgaver/*Tab.tsx        Innstillinger og visning for hver oppgavetype
+app/oppgaver/Oppgave*.tsx    Vanlige regneoppgaver og svarfelt
+src/komponenter/             Delt UI, profilkontekst og rundeorkestrering
+src/domene/                  Rene regler, generatorer, typer og profiloverganger
+src/lagring/                 Persistensgrensesnitt og localStorage-adapter
+__tests__/                   Domene-, lagrings- og komponenttester
 ```
 
----
+Legg regler i `src/domene`, ikke i en rute eller presentasjonskomponent. UI-komponenter kan velge når en handling skjer, men domenet avgjør hva handlingen betyr.
 
-## Oppgavegenerering (`page.tsx`)
+## Oppgaveflyt
 
-```typescript
-tilfeldigMedSifre(n)  // n=1 → 1–9, n=2 → 10–99, n=3 → 100–999
-lagOppgave(innstillinger)  // Velger operasjon tilfeldig fra innstillinger.operasjoner
+`OppgaverSide` har fanene `oppgaver`, `pakker`, `tall` og `gange`.
+
+- `OppgaverTab.tsx` genererer vanlige `Oppgave`-objekter med `+`, `-`, `×` eller `÷`.
+- `PakkerTab.tsx` bruker navngitte mønsterpakker og samme `OppgaveListe`.
+- `TallTab.tsx` bruker den diskriminerte unionen `TallOppgave` for lese- og skriveoppgaver.
+- `GangeTab.tsx` bruker den diskriminerte unionen `GangeOppgave` for fire gangevarianter og kan starte `LynRunde`.
+
+`useGenerertRunde` gir hver genererte runde en eksplisitt id. Listekomponenten skal bruke denne som React `key`, slik at svar og streak nullstilles ved ny runde. `useOppgaverunde` eier felles svar- og sjekketilstand og hindrer at Enter og blur registrerer samme svar to ganger. `RundeResultat` eier felles sluttvisning.
+
+## Profil og progresjon
+
+`ProfilProvider` er eneste UI-inngang til aktiv profil. Oppdateringer er funksjonelle og anvendes synkront på providerens siste profiltilstand. Persistens skjer sekvensielt etter tilstandsendringen, slik at raske oppdateringer ikke lagres i feil rekkefølge.
+
+`Profil.poeng` er kilden til progresjon. Tittel og tårnetasje beregnes fra poeng med funksjonene i `src/domene/titler.ts`; de lagres ikke som separate profilfelt. Bruk `giPoeng` for alle poengendringer.
+
+Svar registreres gjennom `useSvarOrkestrering`, som oppdaterer statistikk, faktastatus, streak og poeng. Scoring av vanlige oppgaver eies av `src/domene/poeng.ts`. Gangevarianter bruker den samme grunnregelen; eventuelle avvik må være eksplisitte modusregler.
+
+## Persistens
+
+`ProfilLager` er et asynkront grensesnitt. Standardadapteren lagrer profiler og aktiv profil-id i `localStorage`. Skrivninger serialiseres fordi lagring av en profil er en les–endre–skriv-operasjon over profilsamlingen.
+
+Profilskjemaet normaliseres i `fyllInnDefaults`. Ved nye profilfelt:
+
+1. øk `PROFIL_SCHEMA_VERSJON` når eksisterende data må transformeres;
+2. legg migrasjonen i `MIGRASJONER`;
+3. legg en trygg default i `fyllInnDefaults`;
+4. legg til migrerings- og lagringstester.
+
+## Viktige invariants
+
+- Ett brukerforsøk registreres og premieres høyst én gang.
+- Minst én valgt operasjon eller gangevariant beholdes.
+- Subtraksjon genererer ikke negative svar.
+- Divisjon genererer heltallssvar. `sifrerA` er foreløpig ikke en garantert begrensning for divisjon.
+- Daglig bonus kan gis én gang per lokal kalenderdag; regelen håndheves av `belønnDagligUtfordring`.
+- Nye varianter skal legges til i diskriminerte unions og håndteres eksplisitt i generator, fasit og UI.
+- Profilskrivninger må bevare rekkefølgen de ble gjort i.
+
+## Verifisering
+
+Bruk pnpm:
+
+```bash
+pnpm test --runInBand path/to/fokusert.test.ts
+pnpm test --runInBand
+pnpm lint
+pnpm build
 ```
 
-Spesialregler:
-- **Subtraksjon:** `a >= b` alltid (aldri negativt svar)
-- **Divisjon:** `b` har `sifrerB` sifre, kvotienten er 1–9, `a = b × kvotient`
-  - *Bug:* `sifrerA` ignoreres for divisjon
+Skriv først en test som viser ønsket oppførsel. Etter 1–5 tester for ett sammenhengende konsept skal en subagent med fersk kontekst gjennomgå endringen. Kjør hele suiten, lint og build før commit.
 
----
+## Kjente begrensninger
 
-## Poenglogikk (`OppgaveListe.tsx`)
-
-```typescript
-poengForOppgave(oppgave):
-  sifre = min(antall sifre i svar, 6)   // Basispoenget
-  bonus = × → +5,  ÷ → +10,  +/- → 0
-  return sifre + bonus
-```
-
-Poeng akkumuleres i `poeng`-state i `OppgaverSide` og vises øverst.
-
----
-
-## OppgaveListe-komponent
-
-**Props:** `oppgaver`, `leggTilPoeng`, `onNyRunde`, `onEnterAt?`
-
-**State:** `svar: string[]`, `sjekket: boolean[]`
-
-**Logikk:**
-- `sjekkEtt(i)` — sjekker én oppgave ved blur/Enter
-- `sjekkAlle()` — knappen "Sjekk svar 🔍" sjekker alle med input
-- Klikk på feil svar nullstiller og lar brukeren prøve igjen
-- "Ny runde 🎲" vises når `sjekket.every(Boolean)` — *bug: aldri true om felt er tomme*
-- Reset via `useEffect` på `[oppgaver]`
-
----
-
-## Kjente bugs / teknisk gjeld
-
-1. **Ingen tester** — Jest ikke installert, ingen testfiler, bryter CLAUDE.md-krav om TDD
-2. **`sjekkAlle` UX-bug** — tomme felt setter aldri `sjekket[i] = true`, så "Ny runde"-knappen vises aldri om noen felt er tomme
-3. **Divisjon ignorerer `sifrerA`** — kvotienten er alltid 1–9 uavhengig av innstillingen
-4. **`MatteOppgave.tsx` ubrukt** — prototype-artefakt, bør slettes
-5. **`layout.tsx` boilerplate** — `title: "Create Next App"`, `lang="en"` mens alt er norsk
-6. **Tom "test"-tab** synlig for brukerne
-
----
-
-## Styling
-
-- **Font:** `fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive"` — inline på tre steder
-- **Farger:** gul bakgrunn (`bg-yellow-100`), grønt = riktig, rødt = feil, blått = input
-- **Layout:** Flex, responsive med `md:`-prefix — kolonne på mobil, rad på desktop
-- **Tailwind v4** via `@tailwindcss/postcss`
-
----
-
-## Tech stack
-
-| Teknologi | Versjon |
-|-----------|---------|
-| Next.js | 16.1.6 (App Router) |
-| React | 19.2.3 |
-| Tailwind CSS | v4 |
-| TypeScript | 5.x, strict mode |
-| pnpm | pakkebehandler |
-| Jest | *ikke installert ennå* |
-
-Scripts: `pnpm dev`, `pnpm build`, `pnpm lint` (ingen `test`-script).
+- Divisjonsgeneratoren bruker `sifrerB` for divisor og en kvotient fra 1–9; `sifrerA` styrer derfor ikke dividendens sifferantall.
+- Profilpersistens er lokal i nettleseren og synkroniseres ikke mellom enheter eller faner.
+- Flere innstillingspaneler har lignende knappestil. Del presentasjonskomponenter først når de har samme semantikk, ikke bare samme Tailwind-klasser.

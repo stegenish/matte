@@ -1,19 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ALLE_VARIANTER,
   fasitFor,
   lagGangerunde,
   poengForGangeOppgave,
   type GangeOppgave,
+  type GangeInputOppgave,
   type GangeVariant,
   type GangetabellInnstillinger,
+  type SantUsantOppgave,
 } from "@/src/domene/gangevariant";
-import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
 import { useSvarOrkestrering } from "@/src/komponenter/useSvarOrkestrering";
+import {
+  useGenerertRunde,
+  useOppgaverunde,
+} from "@/src/komponenter/useOppgaverunde";
+import { RundeResultat } from "@/src/komponenter/RundeResultat";
 import { LynRunde } from "./LynRunde";
+import { Gangetabell } from "./Gangetabell";
 
 interface Props {
   leggTilPoeng: (p: number) => void;
@@ -21,7 +28,6 @@ interface Props {
 
 const TABELL_VALG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const ANTALL_VALG = [5, 10, 15, 20];
-const GANGERIADER = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const VARIANT_LABEL: Record<GangeVariant, string> = {
   klassisk: "Klassisk (7 × 8 = ?)",
@@ -36,12 +42,13 @@ export function GangeTab({ leggTilPoeng }: Props) {
     varianter: ["klassisk"],
     antallOppgaver: 10,
   });
-  const [oppgaver, setOppgaver] = useState<GangeOppgave[]>([]);
+  const { runde, startRunde } = useGenerertRunde<GangeOppgave>();
+  const { id: rundeId, oppgaver } = runde;
   const [lynRunde, setLynRunde] = useState(false);
   const [visGangetabell, setVisGangetabell] = useState(true);
 
   function generer() {
-    setOppgaver(lagGangerunde(innstillinger));
+    startRunde(lagGangerunde(innstillinger));
   }
 
   if (lynRunde) {
@@ -177,6 +184,7 @@ export function GangeTab({ leggTilPoeng }: Props) {
             </div>
           ) : (
             <GangeOppgaveListe
+              key={rundeId}
               oppgaver={oppgaver}
               leggTilPoeng={leggTilPoeng}
               onNyRunde={generer}
@@ -185,63 +193,6 @@ export function GangeTab({ leggTilPoeng }: Props) {
         </div>
         {visGangetabell && <Gangetabell />}
       </section>
-    </div>
-  );
-}
-
-function Gangetabell() {
-  return (
-    <div className="shrink-0 overflow-auto">
-      <h2 className="text-lg font-black text-gray-600 mb-2 text-center">
-        Gangetabell
-      </h2>
-      <table
-        aria-label="Gangetabell"
-        className="border-collapse text-center text-base font-bold"
-      >
-        <thead>
-          <tr>
-            <th className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">
-              ×
-            </th>
-            {GANGERIADER.map((n) => (
-              <th
-                key={n}
-                className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200"
-              >
-                {n}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {GANGERIADER.map((a) => (
-            <tr key={a}>
-              <th className="w-12 h-12 bg-purple-100 text-purple-700 border border-purple-200">
-                {a}
-              </th>
-              {GANGERIADER.map((b) => {
-                const mørkRad = a % 2 === 0;
-                const mørkKol = b % 2 === 0;
-                const bg =
-                  mørkRad && mørkKol
-                    ? "bg-yellow-100"
-                    : mørkRad || mørkKol
-                      ? "bg-yellow-50"
-                      : "bg-white";
-                return (
-                  <td
-                    key={b}
-                    className={`w-12 h-12 border border-yellow-200 text-gray-700 hover:bg-orange-100 ${bg}`}
-                  >
-                    {a * b}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }
@@ -255,25 +206,15 @@ function GangeOppgaveListe({
   leggTilPoeng: (p: number) => void;
   onNyRunde: () => void;
 }) {
-  const [svarTekst, setSvarTekst] = useState<string[]>(() =>
-    Array(oppgaver.length).fill(""),
-  );
-  const [valgtSant, setValgtSant] = useState<(boolean | null)[]>(() =>
-    Array(oppgaver.length).fill(null),
-  );
-  const [sjekket, setSjekket] = useState<boolean[]>(() =>
-    Array(oppgaver.length).fill(false),
-  );
-  const { streak, håndterEtt } = useSvarOrkestrering(leggTilPoeng, oppgaver);
-
-  useEffect(() => {
-    setSvarTekst(Array(oppgaver.length).fill(""));
-    setValgtSant(Array(oppgaver.length).fill(null));
-    setSjekket(Array(oppgaver.length).fill(false));
-  }, [oppgaver]);
+  const { svar, sjekket, alleSjekket, oppdaterSvar, prøvMarkerSjekket } =
+    useOppgaverunde(oppgaver.length, () => ({
+      tekst: "",
+      valgtSant: null as boolean | null,
+    }));
+  const { streak, håndterEtt } = useSvarOrkestrering(leggTilPoeng);
 
   function håndterSvar(i: number, erRett: boolean) {
-    setSjekket((prev) => oppdaterIndex(prev, i, true));
+    if (!prøvMarkerSjekket(i)) return;
     const o = oppgaver[i];
     const [min, max] = o.a <= o.b ? [o.a, o.b] : [o.b, o.a];
     håndterEtt({
@@ -284,57 +225,50 @@ function GangeOppgaveListe({
   }
 
   function sjekkInput(i: number) {
-    if (sjekket[i] || svarTekst[i] === "") return;
-    håndterSvar(i, Number(svarTekst[i]) === fasitFor(oppgaver[i]));
+    if (svar[i].tekst === "") return;
+    håndterSvar(i, Number(svar[i].tekst) === fasitFor(oppgaver[i]));
   }
 
   function velgSant(i: number, sant: boolean) {
-    if (sjekket[i]) return;
-    setValgtSant((prev) => oppdaterIndex(prev, i, sant));
-    håndterSvar(i, sant === oppgaver[i].påstandRiktig);
+    const oppgave = oppgaver[i];
+    if (oppgave.variant !== "sant-usant") return;
+    oppdaterSvar(i, (forrige) => ({ ...forrige, valgtSant: sant }));
+    håndterSvar(i, sant === oppgave.påstandRiktig);
   }
 
-  const alleSjekket = oppgaver.length > 0 && sjekket.every(Boolean);
   const antallRiktige = oppgaver.filter((o, i) => {
     if (!sjekket[i]) return false;
-    if (o.variant === "sant-usant") return valgtSant[i] === o.påstandRiktig;
-    return Number(svarTekst[i]) === fasitFor(o);
+    if (o.variant === "sant-usant") return svar[i].valgtSant === o.påstandRiktig;
+    return Number(svar[i].tekst) === fasitFor(o);
   }).length;
 
   return (
     <div className="flex flex-col gap-4 max-w-2xl">
       <Streakvisning streak={streak} />
 
-      {alleSjekket && (
-        <p className="text-2xl font-black text-center text-green-700 mb-2">
-          {antallRiktige} / {oppgaver.length} riktige!{" "}
-          {antallRiktige === oppgaver.length ? "🎉" : "💪"}
-        </p>
-      )}
-
       {oppgaver.map((o, i) => (
         <GangeRad
           key={i}
           index={i}
           oppgave={o}
-          svar={svarTekst[i]}
-          valgtSant={valgtSant[i]}
+          svar={svar[i].tekst}
+          valgtSant={svar[i].valgtSant}
           sjekket={sjekket[i]}
-          onSvarEndret={(v) => setSvarTekst((prev) => oppdaterIndex(prev, i, v))}
+          onSvarEndret={(tekst) =>
+            oppdaterSvar(i, (forrige) => ({ ...forrige, tekst }))
+          }
           onSjekk={() => sjekkInput(i)}
           onVelgSant={(sant) => velgSant(i, sant)}
           autoFocus={i === 0}
         />
       ))}
 
-      {alleSjekket && (
-        <button
-          onClick={onNyRunde}
-          className="mt-2 bg-green-500 hover:bg-green-600 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 transition-colors self-start shadow"
-        >
-          Ny runde! 🎲
-        </button>
-      )}
+      <RundeResultat
+        ferdig={alleSjekket}
+        antallRiktige={antallRiktige}
+        antallOppgaver={oppgaver.length}
+        onNyRunde={onNyRunde}
+      />
     </div>
   );
 }
@@ -447,7 +381,7 @@ function SantUsantInnhold({
   sjekket,
   onVelgSant,
 }: {
-  oppgave: GangeOppgave;
+  oppgave: SantUsantOppgave;
   valgtSant: boolean | null;
   sjekket: boolean;
   onVelgSant: (s: boolean) => void;
@@ -487,7 +421,7 @@ function SantUsantKnapp({
   sant: boolean;
   valgt: boolean;
   sjekket: boolean;
-  riktig: boolean | undefined;
+  riktig: boolean;
   onClick: () => void;
 }) {
   const erFasit = sjekket && riktig === sant;
@@ -518,7 +452,7 @@ function InputInnhold({
   onSvarEndret,
   onSjekk,
 }: {
-  oppgave: GangeOppgave;
+  oppgave: GangeInputOppgave;
   svar: string;
   sjekket: boolean;
   erRiktig: boolean | null;

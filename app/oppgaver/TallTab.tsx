@@ -1,16 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   POENG_PER_TALL_OPPGAVE,
   TALL_PAKKER,
   type TallOppgave,
   type TallPakke,
+  type LeseTallOppgave,
+  type SkriveTallOppgave,
 } from "@/src/domene/tallpakker";
 import { tallTilNavn } from "@/src/domene/tallNavn";
-import { oppdaterIndex } from "@/src/domene/arrayhjelper";
 import { Streakvisning } from "@/src/komponenter/Streakvisning";
 import { useSvarOrkestrering } from "@/src/komponenter/useSvarOrkestrering";
+import {
+  useGenerertRunde,
+  useOppgaverunde,
+} from "@/src/komponenter/useOppgaverunde";
+import { RundeResultat } from "@/src/komponenter/RundeResultat";
 
 interface Props {
   leggTilPoeng: (p: number) => void;
@@ -18,15 +24,16 @@ interface Props {
 
 export function TallTab({ leggTilPoeng }: Props) {
   const [valgtPakke, setValgtPakke] = useState<TallPakke | null>(null);
-  const [oppgaver, setOppgaver] = useState<TallOppgave[]>([]);
+  const { runde, startRunde } = useGenerertRunde<TallOppgave>();
+  const { id: rundeId, oppgaver } = runde;
 
   function velgPakke(pakke: TallPakke) {
     setValgtPakke(pakke);
-    setOppgaver(pakke.generer());
+    startRunde(pakke.generer());
   }
 
   function nyRunde() {
-    if (valgtPakke) setOppgaver(valgtPakke.generer());
+    if (valgtPakke) startRunde(valgtPakke.generer());
   }
 
   return (
@@ -58,6 +65,7 @@ export function TallTab({ leggTilPoeng }: Props) {
               {valgtPakke.navn}
             </h3>
             <TallOppgaveListe
+              key={rundeId}
               oppgaver={oppgaver}
               leggTilPoeng={leggTilPoeng}
               onNyRunde={nyRunde}
@@ -78,25 +86,15 @@ function TallOppgaveListe({
   leggTilPoeng: (p: number) => void;
   onNyRunde: () => void;
 }) {
-  const [valgt, setValgt] = useState<(number | null)[]>(() =>
-    Array(oppgaver.length).fill(null),
-  );
-  const [svarTekst, setSvarTekst] = useState<string[]>(() =>
-    Array(oppgaver.length).fill(""),
-  );
-  const [sjekket, setSjekket] = useState<boolean[]>(() =>
-    Array(oppgaver.length).fill(false),
-  );
-  const { streak, håndterEtt } = useSvarOrkestrering(leggTilPoeng, oppgaver);
-
-  useEffect(() => {
-    setValgt(Array(oppgaver.length).fill(null));
-    setSvarTekst(Array(oppgaver.length).fill(""));
-    setSjekket(Array(oppgaver.length).fill(false));
-  }, [oppgaver]);
+  const { svar, sjekket, alleSjekket, oppdaterSvar, prøvMarkerSjekket } =
+    useOppgaverunde(oppgaver.length, () => ({
+      valgt: null as number | null,
+      tekst: "",
+    }));
+  const { streak, håndterEtt } = useSvarOrkestrering(leggTilPoeng);
 
   function håndterSvar(i: number, erRett: boolean) {
-    setSjekket((prev) => oppdaterIndex(prev, i, true));
+    if (!prøvMarkerSjekket(i)) return;
     håndterEtt({
       erRett,
       nøkkel: `tall:${oppgaver[i].tall}`,
@@ -105,46 +103,38 @@ function TallOppgaveListe({
   }
 
   function velgAlternativ(i: number, tall: number) {
-    if (sjekket[i]) return;
-    setValgt((prev) => oppdaterIndex(prev, i, tall));
+    oppdaterSvar(i, (forrige) => ({ ...forrige, valgt: tall }));
     håndterSvar(i, tall === oppgaver[i].tall);
   }
 
   function sjekkSkrive(i: number) {
-    if (sjekket[i] || svarTekst[i] === "") return;
-    håndterSvar(i, Number(svarTekst[i]) === oppgaver[i].tall);
+    if (svar[i].tekst === "") return;
+    håndterSvar(i, Number(svar[i].tekst) === oppgaver[i].tall);
   }
 
-  const alleSjekket =
-    oppgaver.length > 0 && sjekket.every(Boolean);
   const antallRiktige = oppgaver.filter((o, i) => {
     if (!sjekket[i]) return false;
-    return o.modus === "lese" ? valgt[i] === o.tall : Number(svarTekst[i]) === o.tall;
+    return o.modus === "lese"
+      ? svar[i].valgt === o.tall
+      : Number(svar[i].tekst) === o.tall;
   }).length;
 
   return (
     <div className="flex flex-col gap-4 max-w-2xl">
       <Streakvisning streak={streak} />
 
-      {alleSjekket && (
-        <p className="text-2xl font-black text-center text-green-700 mb-2">
-          {antallRiktige} / {oppgaver.length} riktige!{" "}
-          {antallRiktige === oppgaver.length ? "🎉" : "💪"}
-        </p>
-      )}
-
       {oppgaver.map((o, i) => {
         const erRiktig = sjekket[i]
           ? o.modus === "lese"
-            ? valgt[i] === o.tall
-            : Number(svarTekst[i]) === o.tall
+            ? svar[i].valgt === o.tall
+            : Number(svar[i].tekst) === o.tall
           : null;
         return o.modus === "lese" ? (
           <LeseTallRad
             key={i}
             index={i}
             oppgave={o}
-            valgt={valgt[i]}
+            valgt={svar[i].valgt}
             sjekket={sjekket[i]}
             erRiktig={erRiktig}
             onVelg={(tall) => velgAlternativ(i, tall)}
@@ -154,25 +144,23 @@ function TallOppgaveListe({
             key={i}
             index={i}
             oppgave={o}
-            svar={svarTekst[i]}
+            svar={svar[i].tekst}
             sjekket={sjekket[i]}
             erRiktig={erRiktig}
-            onSvarEndret={(v) =>
-              setSvarTekst((prev) => oppdaterIndex(prev, i, v))
+            onSvarEndret={(tekst) =>
+              oppdaterSvar(i, (forrige) => ({ ...forrige, tekst }))
             }
             onSjekk={() => sjekkSkrive(i)}
           />
         );
       })}
 
-      {alleSjekket && (
-        <button
-          onClick={onNyRunde}
-          className="mt-2 bg-green-500 hover:bg-green-600 text-white text-xl font-black px-6 py-3 rounded-2xl border-2 border-green-700 transition-colors self-start shadow"
-        >
-          Ny runde! 🎲
-        </button>
-      )}
+      <RundeResultat
+        ferdig={alleSjekket}
+        antallRiktige={antallRiktige}
+        antallOppgaver={oppgaver.length}
+        onNyRunde={onNyRunde}
+      />
     </div>
   );
 }
@@ -186,7 +174,7 @@ function LeseTallRad({
   onVelg,
 }: {
   index: number;
-  oppgave: TallOppgave;
+  oppgave: LeseTallOppgave;
   valgt: number | null;
   sjekket: boolean;
   erRiktig: boolean | null;
@@ -213,7 +201,7 @@ function LeseTallRad({
         {erRiktig === false && <span className="text-2xl ml-auto">❌</span>}
       </div>
       <div className="grid grid-cols-2 gap-2 ml-10">
-        {oppgave.alternativer!.map((alt) => {
+        {oppgave.alternativer.map((alt) => {
           const erValgt = valgt === alt;
           const erFasit = alt === oppgave.tall;
           let kolonner =
@@ -249,7 +237,7 @@ function SkriveTallRad({
   onSjekk,
 }: {
   index: number;
-  oppgave: TallOppgave;
+  oppgave: SkriveTallOppgave;
   svar: string;
   sjekket: boolean;
   erRiktig: boolean | null;

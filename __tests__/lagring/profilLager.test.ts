@@ -29,6 +29,18 @@ describe("profilLager", () => {
     expect(alle.map((p) => p.navn).sort()).toEqual(["Lily", "Lineus"]);
   });
 
+  it("mister ikke profiler når flere lagringer starter samtidig", async () => {
+    const a = lagNyProfil("Lily", "🦊");
+    const b = lagNyProfil("Lineus", "🐢");
+
+    await Promise.all([profilLager.lagre(a), profilLager.lagre(b)]);
+
+    expect((await profilLager.hentAlle()).map((p) => p.navn).sort()).toEqual([
+      "Lily",
+      "Lineus",
+    ]);
+  });
+
   it("lagre samme id igjen oppdaterer i stedet for å duplisere", async () => {
     const p = lagNyProfil("Lily", "🦊");
     await profilLager.lagre(p);
